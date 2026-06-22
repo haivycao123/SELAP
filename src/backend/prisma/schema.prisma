@@ -27,7 +27,7 @@ enum Status {
 model User {
   id        Int      @id @default(autoincrement())
   name      String
-  email     String   @unique
+  phone     String   @unique
   password  String
   role      Role     @default(CUSTOMER)
   status    Status   @default(ACTIVE)
