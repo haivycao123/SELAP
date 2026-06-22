@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,24 +6,280 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
 enum Role {
   ADMIN
   SALES_AGENT
   CUSTOMER
 }
 
-enum Status {
+enum AccountStatus {
   PENDING
   ACTIVE
   REJECTED
+  SUSPENDED
+}
+
+enum PropertyType {
+  APARTMENT
+  HOUSE
+  LAND
+  VILLA
+  OFFICE
+  OTHER
+}
+
+enum PropertyStatus {
+  AVAILABLE
+  COMING_SOON
+  DEPOSITED
+  SOLD
+  HIDDEN
+}
+
+enum LeadStatus {
+  NEW
+  CLAIMED
+  CONTACTED
+  QUALIFIED
+  CONVERTED
+  LOST
+  CANCELLED
+}
+
+enum LeadSource {
+  CONSULTATION_REQUEST
+  PROPERTY_INQUIRY
+  MANUAL
+}
+
+enum NotificationType {
+  ACCOUNT_APPROVED
+  ACCOUNT_REJECTED
+  PROPERTY_STATUS_CHANGED
+  PROPERTY_FAVORITE_CHANGED
+  LEAD_CREATED
+  LEAD_CLAIMED
+  LEAD_ACCEPTED
+  SYSTEM
 }
 
 model User {
+  id           Int           @id @default(autoincrement())
+  name         String
+  phone        String        @unique
+  password     String
+  role         Role          @default(CUSTOMER)
+  status       AccountStatus @default(ACTIVE)
+  approvedAt   DateTime?
+  rejectedAt   DateTime?
+  rejectReason String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  approvedById Int?
+  rejectedById Int?
+
+  approvedBy User? @relation("ApprovedUsers", fields: [approvedById], references: [id], onDelete: SetNull)
+  rejectedBy User? @relation("RejectedUsers", fields: [rejectedById], references: [id], onDelete: SetNull)
+
+  approvedUsers User[] @relation("ApprovedUsers")
+  rejectedUsers User[] @relation("RejectedUsers")
+
+  agentProfile          AgentProfile?
+  createdProperties     Property[]              @relation("CreatedProperties")
+  assignedLeads         Lead[]                  @relation("AssignedLeads")
+  requestedLeads        Lead[]                  @relation("RequestedLeads")
+  claimedLeads          LeadClaim[]             @relation("ClaimedLeads")
+  favorites             Favorite[]
+  notifications         Notification[]
+  sentNotifications     Notification[]          @relation("SentNotifications")
+  propertyStatusChanges PropertyStatusHistory[]
+
+  @@index([role])
+  @@index([status])
+}
+
+model AgentProfile {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  regions AgentRegion[]
+}
+
+model Region {
   id        Int      @id @default(autoincrement())
   name      String
-  phone     String   @unique
-  password  String
-  role      Role     @default(CUSTOMER)
-  status    Status   @default(ACTIVE)
+  code      String   @unique
+  city      String?
+  district  String?
+  ward      String?
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agents     AgentRegion[]
+  properties Property[]
+  leads      Lead[]
+
+  @@index([city, district])
+}
+
+model AgentRegion {
+  id             Int      @id @default(autoincrement())
+  agentProfileId Int
+  regionId       Int
+  assignedAt     DateTime @default(now())
+
+  agentProfile AgentProfile @relation(fields: [agentProfileId], references: [id], onDelete: Cascade)
+  region       Region       @relation(fields: [regionId], references: [id], onDelete: Cascade)
+
+  @@unique([agentProfileId, regionId])
+  @@index([regionId])
+}
+
+model Property {
+  id          Int            @id @default(autoincrement())
+  title       String
+  description String?
+  type        PropertyType
+  status      PropertyStatus @default(AVAILABLE)
+  price       Decimal        @db.Decimal(14, 2)
+  area        Decimal        @db.Decimal(10, 2)
+  address     String
+  city        String
+  district    String
+  ward        String?
+  latitude    Decimal?       @db.Decimal(10, 7)
+  longitude   Decimal?       @db.Decimal(10, 7)
+  bedroom     Int?
+  bathroom    Int?
+  floor       Int?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  regionId    Int?
+  createdById Int?
+
+  region    Region? @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  createdBy User?   @relation("CreatedProperties", fields: [createdById], references: [id], onDelete: SetNull)
+
+  images        PropertyImage[]
+  favorites     Favorite[]
+  leads         Lead[]
+  statusHistory PropertyStatusHistory[]
+
+  @@index([status])
+  @@index([type])
+  @@index([price])
+  @@index([area])
+  @@index([city, district])
+  @@index([regionId])
+}
+
+model PropertyImage {
+  id         Int      @id @default(autoincrement())
+  propertyId Int
+  url        String
+  alt        String?
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@index([propertyId])
+}
+
+model PropertyStatusHistory {
+  id          Int             @id @default(autoincrement())
+  propertyId  Int
+  oldStatus   PropertyStatus?
+  newStatus   PropertyStatus
+  changedById Int?
+  note        String?
+  createdAt   DateTime        @default(now())
+
+  property  Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  changedBy User?    @relation(fields: [changedById], references: [id], onDelete: SetNull)
+
+  @@index([propertyId])
+  @@index([changedById])
+}
+
+model Favorite {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  propertyId Int
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, propertyId])
+  @@index([propertyId])
+}
+
+model Lead {
+  id            Int        @id @default(autoincrement())
+  customerName  String
+  customerPhone String
+  message       String?
+  source        LeadSource @default(CONSULTATION_REQUEST)
+  status        LeadStatus @default(NEW)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  claimedAt     DateTime?
+  contactedAt   DateTime?
+
+  customerId      Int?
+  propertyId      Int?
+  regionId        Int?
+  assignedAgentId Int?
+
+  customer      User?     @relation("RequestedLeads", fields: [customerId], references: [id], onDelete: SetNull)
+  property      Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  region        Region?   @relation(fields: [regionId], references: [id], onDelete: SetNull)
+  assignedAgent User?     @relation("AssignedLeads", fields: [assignedAgentId], references: [id], onDelete: SetNull)
+
+  claims LeadClaim[]
+
+  @@index([status])
+  @@index([customerPhone])
+  @@index([regionId, status])
+  @@index([assignedAgentId])
+  @@index([propertyId])
+}
+
+model LeadClaim {
+  id        Int      @id @default(autoincrement())
+  leadId    Int
+  agentId   Int
+  createdAt DateTime @default(now())
+
+  lead  Lead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  agent User @relation("ClaimedLeads", fields: [agentId], references: [id], onDelete: Cascade)
+
+  @@unique([leadId])
+  @@unique([leadId, agentId])
+  @@index([agentId])
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  senderId  Int?
+  type      NotificationType
+  title     String
+  message   String
+  data      Json?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user   User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sender User? @relation("SentNotifications", fields: [senderId], references: [id], onDelete: SetNull)
+
+  @@index([userId, readAt])
+  @@index([type])
 }
