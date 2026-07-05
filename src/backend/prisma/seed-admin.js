@@ -35,8 +35,13 @@ function validatePassword(password) {
 
 async function main() {
   const name = process.env.ADMIN_NAME?.trim() || 'System Admin';
+  const email = requireEnv('ADMIN_EMAIL').toLowerCase();
   const phone = requireEnv('ADMIN_PHONE');
   const password = requireEnv('ADMIN_PASSWORD');
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error('ADMIN_EMAIL format is invalid.');
+  }
 
   validatePhone(phone);
   validatePassword(password);
@@ -45,19 +50,25 @@ async function main() {
     where: { phone },
     update: {
       name,
+      email,
       password: hashPassword(password),
       role: Role.ADMIN,
       status: AccountStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
+      emailVerificationCodeHash: null,
+      emailVerificationCodeExpiresAt: null,
       approvedAt: new Date(),
       rejectedAt: null,
       rejectReason: null,
     },
     create: {
       name,
+      email,
       phone,
       password: hashPassword(password),
       role: Role.ADMIN,
       status: AccountStatus.ACTIVE,
+      emailVerifiedAt: new Date(),
       approvedAt: new Date(),
     },
   });

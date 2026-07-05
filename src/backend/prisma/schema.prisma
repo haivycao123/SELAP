@@ -65,17 +65,25 @@ enum NotificationType {
 }
 
 model User {
-  id           Int           @id @default(autoincrement())
-  name         String
-  phone        String        @unique
-  password     String
-  role         Role          @default(CUSTOMER)
-  status       AccountStatus @default(ACTIVE)
-  approvedAt   DateTime?
-  rejectedAt   DateTime?
-  rejectReason String?
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id                             Int           @id @default(autoincrement())
+  name                           String
+  email                          String        @unique
+  phone                          String        @unique
+  password                       String
+  role                           Role          @default(CUSTOMER)
+  status                         AccountStatus @default(ACTIVE)
+  emailVerifiedAt                DateTime?
+  emailVerificationCodeHash      String?
+  emailVerificationCodeExpiresAt DateTime?
+  passwordResetCodeHash          String?
+  passwordResetCodeExpiresAt     DateTime?
+  passwordResetTokenHash         String?
+  passwordResetTokenExpiresAt    DateTime?
+  approvedAt                     DateTime?
+  rejectedAt                     DateTime?
+  rejectReason                   String?
+  createdAt                      DateTime      @default(now())
+  updatedAt                      DateTime      @updatedAt
 
   approvedById Int?
   rejectedById Int?

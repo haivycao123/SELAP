@@ -1,0 +1,335 @@
+:root {
+  --primary: #328ba8;
+  --primary-dark: #1d647b;
+  --primary-soft: #e8f5f8;
+  --ink: #17252c;
+  --muted: #667780;
+  --line: #d8e4e8;
+  --input-line: #c9d9de;
+  --background: #eef7fa;
+  --surface: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(135deg, rgba(50, 139, 168, 0.14), transparent 40%),
+    var(--background);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.authPage {
+  display: grid;
+  min-height: 100vh;
+  padding: 28px;
+}
+
+.authShell {
+  background: var(--surface);
+  border: 1.5px solid #b7d9e3;
+  border-radius: 20px;
+  box-shadow: 0 22px 55px rgba(29, 100, 123, 0.12);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  min-height: calc(100vh - 56px);
+  padding: 26px 36px 44px;
+}
+
+.authHeader {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.brandLockup {
+  align-items: center;
+  color: var(--primary-dark);
+  display: inline-flex;
+  font-size: 20px;
+  font-weight: 800;
+  gap: 10px;
+}
+
+.brandLogo {
+  height: 38px;
+  width: 38px;
+}
+
+.authStage {
+  align-items: center;
+  display: grid;
+  justify-items: center;
+  padding: 42px 0 18px;
+}
+
+.authCard {
+  background: var(--surface);
+  border: 1.25px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(29, 100, 123, 0.12);
+  padding: 36px;
+  width: min(100%, 440px);
+}
+
+.authCard h1 {
+  font-size: 32px;
+  line-height: 1.1;
+  margin: 0 0 12px;
+}
+
+.panelLead {
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 28px;
+}
+
+.formStack {
+  display: grid;
+  gap: 20px;
+}
+
+.field {
+  display: grid;
+  gap: 10px;
+}
+
+.field span,
+.roleTabs legend {
+  color: #52656e;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.field input {
+  background: #ffffff;
+  border: 1.2px solid var(--input-line);
+  border-radius: 8px;
+  color: var(--ink);
+  min-height: 46px;
+  outline: 0;
+  padding: 0 18px;
+  width: 100%;
+}
+
+.field input::placeholder {
+  color: #829199;
+  opacity: 1;
+}
+
+.field input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(50, 139, 168, 0.14);
+}
+
+.roleTabs {
+  border: 0;
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+}
+
+.roleTabs > div {
+  display: grid;
+}
+
+.roleTabs label {
+  display: contents;
+}
+
+.roleTabs input {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+.roleTabs {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.roleTabs legend {
+  grid-column: 1 / -1;
+}
+
+.roleTabs span {
+  align-items: center;
+  background: #eef4f6;
+  border-radius: 8px;
+  color: #61737b;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.roleTabs input:checked + span {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+.roleTabs input:focus + span {
+  box-shadow: 0 0 0 4px rgba(50, 139, 168, 0.14);
+}
+
+.primaryButton {
+  align-items: center;
+  background: var(--primary);
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  display: inline-flex;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 18px;
+  width: 100%;
+}
+
+.primaryButton:hover {
+  background: var(--primary-dark);
+}
+
+.inlineLink {
+  color: var(--primary);
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  margin: 24px auto 0;
+  text-align: center;
+  width: fit-content;
+}
+
+.authFooter {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 24px 0 0;
+  text-align: center;
+}
+
+.authFooter a {
+  color: var(--primary-dark);
+  font-weight: 800;
+}
+
+.successNotice {
+  background: #e6f7eb;
+  border: 1px solid #37a55b;
+  border-radius: 8px;
+  color: #157347;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+  margin: 0 0 20px;
+  padding: 10px 14px;
+}
+
+.errorNotice {
+  background: #fce8e8;
+  border: 1px solid #cf3f3f;
+  border-radius: 8px;
+  color: #b52a2a;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.45;
+  margin: 0;
+  padding: 10px 14px;
+}
+
+.textButton {
+  background: transparent;
+  border: 0;
+  color: var(--primary);
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  margin: 22px auto 0;
+  padding: 0;
+}
+
+.mutedCenter {
+  color: var(--muted);
+  font-size: 12px;
+  margin: 18px 0 0;
+  text-align: center;
+}
+
+.otpGroup {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(4, 64px);
+}
+
+.otpGroup input {
+  font-size: 22px;
+  font-weight: 800;
+  height: 64px;
+  padding: 0;
+  text-align: center;
+}
+
+@media (max-width: 680px) {
+  .authPage {
+    padding: 14px;
+  }
+
+  .authShell {
+    min-height: calc(100vh - 28px);
+    padding: 20px;
+  }
+
+  .authStage {
+    padding-top: 34px;
+  }
+
+  .authCard {
+    padding: 24px;
+  }
+
+  .authCard h1 {
+    font-size: 28px;
+  }
+
+  .roleTabs {
+    grid-template-columns: 1fr;
+  }
+
+  .otpGroup {
+    gap: 10px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .otpGroup input {
+    height: 56px;
+    min-width: 0;
+  }
+}
