@@ -34,7 +34,9 @@ a {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -281,6 +283,1329 @@ button {
   font-size: 12px;
   margin: 18px 0 0;
   text-align: center;
+}
+
+.dashboardActions {
+  display: grid;
+  gap: 14px;
+}
+
+.catalogMockPage {
+  background: #ffffff;
+  border: 5px solid #23a7f2;
+  color: #17252c;
+  min-height: 100vh;
+  padding: 36px 92px 120px;
+}
+
+.catalogMockShell {
+  margin: 0 auto;
+  max-width: 2300px;
+}
+
+.catalogMockNav {
+  align-items: center;
+  background: #319abd;
+  display: flex;
+  height: 76px;
+  justify-content: space-between;
+  padding: 0 40px;
+}
+
+.catalogMockBrand {
+  align-items: center;
+  color: #e9f8fc;
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 18px;
+}
+
+.catalogLogoImage {
+  display: block;
+  height: 46px;
+  width: 142px;
+}
+
+.catalogLogoMark {
+  align-items: center;
+  background: #ffffff;
+  border: 3px solid #17252c;
+  border-radius: 999px;
+  color: #17252c;
+  display: inline-flex;
+  font-size: 26px;
+  font-weight: 900;
+  height: 52px;
+  justify-content: center;
+  width: 52px;
+}
+
+.catalogMockLinks {
+  align-items: center;
+  display: flex;
+  gap: 40px;
+}
+
+.catalogMockLinks a {
+  color: #e9f8fc;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.catalogMockLinks .mockSignInButton {
+  align-items: center;
+  background: #ffffff;
+  color: #328ba8;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  min-width: 118px;
+  padding: 0 18px;
+}
+
+.catalogMockLinks .mockActiveNavItem {
+  align-items: center;
+  background: #ffffff;
+  color: #328ba8;
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  min-width: 118px;
+  padding: 0 18px;
+}
+
+.agentAreaBadge {
+  align-items: center;
+  background: transparent;
+  border: 1px solid rgba(233, 248, 252, 0.72);
+  color: #e9f8fc;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  height: 32px;
+  justify-content: center;
+  min-width: 142px;
+  padding: 0 18px;
+}
+
+.mockAvatar {
+  align-items: center;
+  background: #2a8bab;
+  border-radius: 999px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 27px;
+  height: 42px;
+  justify-content: center;
+  line-height: 1;
+  width: 42px;
+}
+
+.mockRoleAvatar {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.mockCustomerAvatar {
+  position: relative;
+}
+
+.mockCustomerAvatar span::before,
+.mockCustomerAvatar span::after {
+  content: "";
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+}
+
+.mockCustomerAvatar span::before {
+  border: 3px solid #ffffff;
+  border-radius: 999px;
+  height: 10px;
+  top: 10px;
+  width: 10px;
+}
+
+.mockCustomerAvatar span::after {
+  border: 3px solid #ffffff;
+  border-radius: 999px 999px 0 0;
+  border-bottom: 0;
+  height: 9px;
+  top: 25px;
+  width: 20px;
+}
+
+.mockFilterBar {
+  border: 1px solid #c9d9de;
+  display: grid;
+  gap: 32px;
+  grid-template-columns: 1.9fr 1.02fr 1.45fr 1.02fr 0.78fr;
+  margin: 42px 52px 0;
+  padding: 22px 40px;
+}
+
+.mockFilterBar input,
+.mockFilterBar select {
+  background: #ffffff;
+  border: 1px solid #c9d9de;
+  color: #667780;
+  font-size: 13px;
+  height: 52px;
+  outline: 0;
+  padding: 0 22px;
+  text-align: center;
+  width: 100%;
+}
+
+.mockFilterBar select {
+  text-align-last: center;
+}
+
+.mockFilterBar input::placeholder {
+  color: #667780;
+  opacity: 1;
+  text-align: center;
+}
+
+.mockPriceField {
+  align-items: center;
+  border: 1px solid #c9d9de;
+  display: grid;
+  grid-template-columns: minmax(58px, 1fr) 14px minmax(58px, 1fr) 64px;
+  height: 52px;
+}
+
+.mockPriceField input {
+  border: 0;
+  height: 50px;
+  padding: 0 8px;
+  text-align: center;
+}
+
+.mockPriceField input:focus {
+  box-shadow: none;
+}
+
+.mockPriceSeparator,
+.mockPriceUnit {
+  align-items: center;
+  color: #667780;
+  display: inline-flex;
+  height: 50px;
+  font-weight: 700;
+  justify-content: center;
+}
+
+.mockPriceSeparator {
+  font-size: 13px;
+}
+
+.mockPriceUnit {
+  border-left: 1px solid #c9d9de;
+  font-size: 11px;
+}
+
+.mockFilterBar input:focus,
+.mockFilterBar select:focus {
+  border-color: #328ba8;
+  box-shadow: 0 0 0 3px rgba(50, 139, 168, 0.12);
+}
+
+.mockPriceField:focus-within {
+  border-color: #328ba8;
+  box-shadow: 0 0 0 3px rgba(50, 139, 168, 0.12);
+}
+
+.mockPriceField input:focus {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.mockFilterBar button {
+  background: #328ba8;
+  border: 0;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  height: 52px;
+}
+
+.mockPropertyGrid {
+  display: grid;
+  gap: 44px;
+  grid-template-columns: repeat(3, minmax(300px, 1fr));
+  margin: 58px 52px 0;
+}
+
+.mockPropertyCard {
+  background: #ffffff;
+  border: 1px solid #d8e4e8;
+  min-height: 450px;
+  position: relative;
+}
+
+.mockPropertyPhoto {
+  background: #89ccd9;
+  display: block;
+  height: 230px;
+  object-fit: cover;
+  overflow: hidden;
+  width: 100%;
+}
+
+.mockPropertyPhoto img {
+  display: block;
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.mockPhotoGradient {
+  background: linear-gradient(135deg, #9bd9e6 0%, #5faebf 55%, #2f8298 100%);
+}
+
+.mockPhotoGradient-2 {
+  background: linear-gradient(135deg, #e7e3d7 0%, #97d2dc 50%, #328ba8 100%);
+}
+
+.mockPhotoGradient-3 {
+  background: linear-gradient(145deg, #ddf1f4 0%, #cddde0 42%, #99c1ca 100%);
+}
+
+.mockPhotoGradient-4 {
+  background: linear-gradient(135deg, #8ed4df 0%, #64b5c5 52%, #28778e 100%);
+}
+
+.mockHeartButton {
+  align-items: center;
+  background: rgba(50, 139, 168, 0.08);
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 24px;
+  top: 22px;
+  width: 34px;
+}
+
+.mockHeartButton span {
+  display: block;
+  height: 17px;
+  position: relative;
+  width: 18px;
+}
+
+.mockHeartButton span::before,
+.mockHeartButton span::after {
+  background: #ffffff;
+  content: "";
+  height: 15px;
+  left: 9px;
+  position: absolute;
+  top: 2px;
+  transform: rotate(-45deg);
+  transform-origin: 0 100%;
+  width: 9px;
+}
+
+.mockHeartButton span::after {
+  left: 0;
+  transform: rotate(45deg);
+  transform-origin: 100% 100%;
+}
+
+.mockHeartButton span::before,
+.mockHeartButton span::after {
+  border-radius: 9px 9px 0 0;
+}
+
+.mockHeartButton span {
+  transform: translateY(1px);
+}
+
+.mockCardBody {
+  display: grid;
+  gap: 16px;
+  padding: 34px 30px 28px;
+}
+
+.mockCardBody h2 {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.mockPrice {
+  color: #1d647b;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.mockMeta {
+  color: #667780;
+  font-size: 13px;
+  margin: 0;
+}
+
+.mockStatus {
+  font-size: 13px;
+  font-weight: 700;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.mockError,
+.mockEmpty {
+  border: 1px dashed #b7d9e3;
+  color: #667780;
+  font-size: 14px;
+  font-weight: 700;
+  grid-column: 1 / -1;
+  padding: 36px;
+  text-align: center;
+}
+
+.mockError {
+  border-color: #cf3f3f;
+  color: #b52a2a;
+  margin: 26px 52px 0;
+}
+
+.mockSkeleton {
+  background: linear-gradient(90deg, #f3f7f8, #e6eef1, #f3f7f8);
+  border: 0;
+}
+
+.catalogMockPage .status-AVAILABLE {
+  color: #157347;
+}
+
+.catalogMockPage .status-COMING_SOON {
+  color: #9b6a00;
+}
+
+.catalogMockPage .status-DEPOSITED {
+  color: #1d647b;
+}
+
+.catalogMockPage .status-HIDDEN {
+  color: #667780;
+}
+
+.approvalMockPage {
+  border: 0;
+  padding-top: 36px;
+}
+
+.approvalNav {
+  height: 72px;
+}
+
+.approvalNavLinks {
+  gap: 38px;
+}
+
+.approvalActiveLink {
+  color: #328ba8 !important;
+  font-weight: 800 !important;
+}
+
+.approvalHeader {
+  margin: 42px 52px 0;
+}
+
+.approvalHeader h1 {
+  font-size: 22px;
+  line-height: 1.2;
+  margin: 0 0 14px;
+}
+
+.approvalHeader p {
+  color: #667780;
+  font-size: 14px;
+  margin: 0;
+}
+
+.approvalNotice,
+.approvalError,
+.approvalSavedState {
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.4;
+  margin: 18px 52px 0;
+  padding: 10px 18px;
+}
+
+.approvalNotice,
+.approvalSavedState {
+  background: #e6f7eb;
+  border: 1px solid #37a55b;
+  color: #157347;
+}
+
+.approvalError {
+  background: #fce8e8;
+  border: 1px solid #cf3f3f;
+  color: #b52a2a;
+}
+
+.approvalPanel {
+  background: #ffffff;
+  border: 1.25px solid #d8e4e8;
+  box-shadow: 0 8px 22px rgba(29, 100, 123, 0.12);
+  margin: 36px 52px 0;
+  min-height: 440px;
+  overflow: hidden;
+}
+
+.approvalTable {
+  width: 100%;
+}
+
+.approvalTableHead,
+.approvalRow {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(210px, 1.35fr) minmax(150px, 0.85fr) minmax(140px, 0.72fr) minmax(280px, 1.38fr) minmax(220px, 1fr);
+}
+
+.approvalTableHead {
+  background: #e8f5f8;
+  color: #52656e;
+  font-size: 12px;
+  font-weight: 800;
+  height: 54px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.approvalTableHead span,
+.approvalRow > * {
+  padding-left: 28px;
+  padding-right: 16px;
+}
+
+.approvalRow {
+  border-top: 1px solid #dbe7eb;
+  min-height: 100px;
+}
+
+.agentIdentity {
+  display: grid;
+  gap: 7px;
+}
+
+.agentIdentity strong {
+  color: #17252c;
+  font-size: 17px;
+  line-height: 1.2;
+}
+
+.agentIdentity span,
+.agentPhone {
+  color: #667780;
+  font-size: 14px;
+}
+
+.pendingStatusPill {
+  align-items: center;
+  background: #fff4cc;
+  border: 1px solid #e5b93d;
+  border-radius: 999px;
+  color: #8b6500;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 800;
+  height: 30px;
+  justify-content: center;
+  justify-self: start;
+  padding: 0 20px;
+}
+
+.approvalRow select {
+  background: #ffffff;
+  border: 1.2px solid #c9d9de;
+  color: #667780;
+  font-size: 14px;
+  height: 42px;
+  margin-left: 28px;
+  outline: 0;
+  padding: 0 18px;
+  width: calc(100% - 44px);
+}
+
+.approvalRow select:focus {
+  border-color: #328ba8;
+  box-shadow: 0 0 0 3px rgba(50, 139, 168, 0.12);
+}
+
+.approvalActions {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+}
+
+.approveButton,
+.mutedButton,
+.rejectButton {
+  align-items: center;
+  border-radius: 8px;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 800;
+  height: 42px;
+  justify-content: center;
+  min-width: 100px;
+  padding: 0 18px;
+}
+
+.approveButton {
+  background: #328ba8;
+  border: 0;
+  color: #ffffff;
+}
+
+.mutedButton {
+  background: #e6ecef;
+  border: 0;
+  color: #73838a;
+}
+
+.rejectButton {
+  background: #ffffff;
+  border: 1.2px solid #cf3f3f;
+  color: #cf3f3f;
+  min-width: 90px;
+}
+
+.approveButton:disabled,
+.mutedButton:disabled,
+.rejectButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.approvalEmpty {
+  color: #667780;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  padding: 46px 34px;
+}
+
+.approvalSavedState {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 444px;
+}
+
+.secondaryDashboardButton {
+  background: var(--primary-dark);
+}
+
+.appPage {
+  background: #ffffff;
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 28px clamp(18px, 4vw, 48px) 44px;
+}
+
+.topNav {
+  align-items: center;
+  background: var(--primary);
+  border: 1px solid #1d7f9f;
+  border-radius: 16px;
+  display: flex;
+  gap: 28px;
+  justify-content: space-between;
+  min-height: 74px;
+  padding: 0 24px;
+}
+
+.compactBrand {
+  color: #ffffff;
+}
+
+.brandMark {
+  align-items: center;
+  background: var(--primary-dark);
+  border-radius: 10px;
+  color: #ffffff;
+  display: inline-flex;
+  font-size: 18px;
+  font-weight: 900;
+  height: 38px;
+  justify-content: center;
+  width: 38px;
+}
+
+.navLinks {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.navLinks a {
+  border-radius: 8px;
+  color: #e9f8fc;
+  font-size: 14px;
+  font-weight: 800;
+  padding: 10px 12px;
+}
+
+.navLinks a.active,
+.navLinks a:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+}
+
+.catalogHeader,
+.managementHeader {
+  align-items: flex-end;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  padding: 36px 0 20px;
+}
+
+.eyebrow {
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0;
+  margin: 0 0 8px;
+  text-transform: uppercase;
+}
+
+.catalogHeader h1,
+.managementHeader h1 {
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.05;
+  margin: 0;
+}
+
+.catalogStats {
+  align-items: center;
+  background: var(--primary-soft);
+  border: 1px solid #a7d5e2;
+  border-radius: 8px;
+  color: var(--primary-dark);
+  display: inline-flex;
+  flex-direction: column;
+  font-size: 12px;
+  font-weight: 800;
+  min-width: 110px;
+  padding: 12px 16px;
+  text-transform: uppercase;
+}
+
+.catalogStats span {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.filterBand {
+  align-items: flex-end;
+  border-bottom: 1px solid var(--line);
+  border-top: 1px solid var(--line);
+  display: grid;
+  gap: 14px;
+  grid-template-columns: 1.4fr 0.9fr repeat(2, 1fr) repeat(2, 0.9fr) 1.1fr 1.2fr auto;
+  padding: 18px 0;
+}
+
+.filterBand label,
+.tableToolbar label,
+.editPanel label {
+  display: grid;
+  gap: 8px;
+}
+
+.filterBand span,
+.tableToolbar span,
+.editPanel label span {
+  color: #52656e;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.filterBand input,
+.filterBand select,
+.tableToolbar input,
+.editPanel input,
+.editPanel select,
+.editPanel textarea {
+  background: #ffffff;
+  border: 1.2px solid var(--input-line);
+  border-radius: 8px;
+  color: var(--ink);
+  min-height: 42px;
+  outline: 0;
+  padding: 0 12px;
+  width: 100%;
+}
+
+.editPanel textarea {
+  line-height: 1.45;
+  min-height: 96px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.filterBand input:focus,
+.filterBand select:focus,
+.tableToolbar input:focus,
+.editPanel input:focus,
+.editPanel select:focus,
+.editPanel textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px rgba(50, 139, 168, 0.14);
+}
+
+.splitInputs {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.filterActions,
+.formActions,
+.rowActions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.compactButton {
+  min-height: 42px;
+  padding: 0 16px;
+  width: auto;
+}
+
+.outlineButton,
+.dangerButton,
+.iconButton {
+  align-items: center;
+  background: #ffffff;
+  border: 1.3px solid var(--primary);
+  border-radius: 8px;
+  color: var(--primary);
+  display: inline-flex;
+  font-weight: 900;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 16px;
+}
+
+.outlineButton:disabled {
+  border-color: #d8e4e8;
+  color: #91a2aa;
+  cursor: not-allowed;
+}
+
+.dangerButton {
+  border-color: #cf3f3f;
+  color: #cf3f3f;
+}
+
+.miniButton {
+  font-size: 12px;
+  min-height: 34px;
+  padding: 0 10px;
+}
+
+.fullWidthButton {
+  width: 100%;
+}
+
+.wideNotice {
+  margin: 0 0 18px;
+}
+
+.propertyGrid {
+  display: grid;
+  gap: 18px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding-top: 24px;
+}
+
+.propertyCard {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.propertyPhoto {
+  aspect-ratio: 16 / 10;
+  display: block;
+  height: auto;
+  object-fit: cover;
+  width: 100%;
+}
+
+.fallbackPhoto {
+  align-items: flex-end;
+  background:
+    linear-gradient(135deg, #aee0ec 0%, #6bb5c9 45%, #286f87 100%);
+  color: #ffffff;
+  display: flex;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 16px;
+}
+
+.propertyBody {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+}
+
+.propertyTopline {
+  align-items: center;
+  color: var(--muted);
+  display: flex;
+  font-size: 12px;
+  font-weight: 800;
+  justify-content: space-between;
+}
+
+.propertyCard h2 {
+  font-size: 19px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.propertyCard p {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.propertyCard strong,
+.detailDrawer strong {
+  color: var(--primary-dark);
+  font-size: 18px;
+}
+
+.propertyFacts,
+.detailFacts {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.propertyFacts div,
+.detailFacts div {
+  background: #f6fafb;
+  border: 1px solid #e2edf0;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.propertyFacts dt,
+.detailFacts dt {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.propertyFacts dd,
+.detailFacts dd {
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.statusPill {
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  padding: 7px 9px;
+}
+
+.status-AVAILABLE {
+  background: #e6f7eb;
+  color: #157347;
+}
+
+.status-COMING_SOON {
+  background: #fff4cc;
+  color: #9b6a00;
+}
+
+.status-DEPOSITED {
+  background: #e8f5f8;
+  color: var(--primary-dark);
+}
+
+.status-SOLD,
+.status-HIDDEN {
+  background: #edf1f3;
+  color: #667780;
+}
+
+.skeletonCard {
+  aspect-ratio: 4 / 3;
+  background:
+    linear-gradient(90deg, #f3f7f8, #e6eef1, #f3f7f8);
+  border: 0;
+}
+
+.emptyState {
+  border: 1px dashed #b7d9e3;
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 800;
+  grid-column: 1 / -1;
+  padding: 40px;
+  text-align: center;
+}
+
+.paginationBar {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  padding-top: 24px;
+}
+
+.paginationBar span {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.drawerBackdrop {
+  background: rgba(23, 37, 44, 0.28);
+  inset: 0;
+  position: fixed;
+  z-index: 20;
+}
+
+.detailDrawer {
+  background: #ffffff;
+  border-left: 1px solid var(--line);
+  box-shadow: -20px 0 48px rgba(29, 100, 123, 0.18);
+  display: grid;
+  gap: 14px;
+  height: 100%;
+  margin-left: auto;
+  overflow-y: auto;
+  padding: 28px;
+  position: relative;
+  width: min(480px, 100%);
+}
+
+.detailDrawer h2 {
+  font-size: 28px;
+  line-height: 1.15;
+  margin: 0;
+}
+
+.detailDrawer p {
+  color: var(--muted);
+  line-height: 1.55;
+  margin: 0;
+}
+
+.detailFacts {
+  grid-template-columns: 1fr 1fr;
+}
+
+.detailFacts div:first-child,
+.detailFacts div:nth-child(2) {
+  grid-column: 1 / -1;
+}
+
+.closeButton {
+  border-color: #d8e4e8;
+  color: var(--ink);
+  font-size: 24px;
+  height: 40px;
+  padding: 0;
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  width: 40px;
+}
+
+.managementGrid {
+  align-items: flex-start;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(360px, 0.7fr);
+}
+
+.tablePanel,
+.editPanel {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.tableToolbar {
+  align-items: flex-end;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: 1fr auto auto;
+  padding: 16px;
+}
+
+.checkControl {
+  align-items: center;
+  color: var(--muted);
+  display: flex !important;
+  flex-direction: row;
+  font-size: 13px;
+  font-weight: 800;
+  gap: 8px;
+  min-height: 42px;
+}
+
+.checkControl input {
+  accent-color: var(--primary);
+  width: auto;
+}
+
+.propertyTableWrap {
+  overflow-x: auto;
+}
+
+.propertyTable {
+  border-collapse: collapse;
+  min-width: 780px;
+  width: 100%;
+}
+
+.propertyTable th {
+  background: var(--primary-soft);
+  color: var(--primary-dark);
+  font-size: 12px;
+  padding: 12px 14px;
+  text-align: left;
+}
+
+.propertyTable td {
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 14px;
+  padding: 13px 14px;
+  vertical-align: middle;
+}
+
+.propertyTable td strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.propertyTable td span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.selectedRow td {
+  background: #f3fafc;
+}
+
+.editPanel {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+  position: sticky;
+  top: 18px;
+}
+
+.formHeading {
+    align-items: flex-start;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.formHeading h2 {
+  font-size: 22px;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.recordBadge {
+  background: var(--primary-soft);
+  border: 1px solid #a7d5e2;
+  border-radius: 999px;
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 900;
+  padding: 8px 10px;
+}
+
+.formGrid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fullField {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1180px) {
+  .catalogMockPage {
+    padding: 34px;
+  }
+
+  .mockFilterBar,
+  .mockPropertyGrid {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .mockFilterBar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mockPropertyGrid {
+    gap: 24px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .approvalPanel,
+  .approvalHeader,
+  .approvalNotice,
+  .approvalError {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .filterBand {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .filterActions {
+    grid-column: 1 / -1;
+  }
+
+  .propertyGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .managementGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .editPanel {
+    position: static;
+  }
+}
+
+@media (max-width: 760px) {
+  .catalogMockPage {
+    border-width: 3px;
+    padding: 14px;
+  }
+
+  .catalogMockNav {
+    align-items: flex-start;
+    height: auto;
+    flex-direction: column;
+    gap: 20px;
+    padding: 22px;
+  }
+
+  .catalogMockLinks {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+  }
+
+  .catalogMockLinks .mockSignInButton {
+    width: 100%;
+  }
+
+  .mockCatalogIntro {
+    padding: 26px 0 20px;
+  }
+
+  .mockFilterBar {
+    gap: 14px;
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+
+  .mockPropertyGrid {
+    grid-template-columns: 1fr;
+    margin-top: 24px;
+  }
+
+  .approvalHeader {
+    margin-top: 28px;
+  }
+
+  .approvalPanel {
+    margin-top: 24px;
+  }
+
+  .mockPropertyCard {
+    min-height: auto;
+  }
+
+  .appPage {
+    padding: 14px;
+  }
+
+  .topNav,
+  .catalogHeader,
+  .managementHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .navLinks {
+    justify-content: flex-start;
+  }
+
+  .filterBand,
+  .propertyGrid,
+  .tableToolbar,
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .propertyFacts,
+  .detailFacts {
+    grid-template-columns: 1fr;
+  }
+
+  .filterActions,
+  .formActions,
+  .rowActions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .compactButton,
+  .outlineButton,
+  .dangerButton {
+    width: 100%;
+  }
 }
 
 .otpGroup {

@@ -1,7 +1,7 @@
 import { Role } from '@prisma/client';
 
-export class LoginDto {
+export type AuthenticatedUser = {
+  id: number;
   phone: string;
-  password: string;
   role: Role;
-}
+};

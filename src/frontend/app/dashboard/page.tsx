@@ -8,9 +8,14 @@ export default function DashboardPage() {
         title="Welcome to SELAP"
         description="You have signed in successfully."
       >
-        <Link className="primaryButton" href="/auth/login">
-          Back to Sign In
-        </Link>
+        <div className="dashboardActions">
+          <Link className="primaryButton" href="/properties">
+            Browse Catalog
+          </Link>
+          <Link className="primaryButton secondaryDashboardButton" href="/properties/manage">
+            Manage Properties
+          </Link>
+        </div>
       </AuthCard>
     </AuthShell>
   );

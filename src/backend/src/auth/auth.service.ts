@@ -18,6 +18,7 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { VerifyResetCodeDto } from './dto/verify-reset-code.dto';
 import { PasswordService } from './password.service';
 import { TokenService } from './token.service';
+import type { AuthenticatedUser } from './authenticated-user';
 
 type AuthUser = Pick<
   User,
@@ -122,6 +123,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid phone number or password.');
     }
 
+    if (user.role !== dto.role) {
+      throw new UnauthorizedException('Selected role does not match this account.');
+    }
+
     if (!user.emailVerifiedAt) {
       throw new ForbiddenException('Email is not verified.');
     }
@@ -139,6 +144,42 @@ export class AuthService {
         role: user.role,
       }),
       user: this.toAuthUser(user),
+    };
+  }
+
+  async me(currentUser: AuthenticatedUser) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: currentUser.id },
+      include: {
+        agentProfile: {
+          include: {
+            regions: {
+              include: { region: true },
+              orderBy: { assignedAt: 'desc' },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Access token is invalid.');
+    }
+
+    return {
+      user: {
+        ...this.toAuthUser(user),
+        regions:
+          user.agentProfile?.regions.map((assignment) => ({
+            id: assignment.region.id,
+            name: assignment.region.name,
+            code: assignment.region.code,
+            city: assignment.region.city,
+            district: assignment.region.district,
+            ward: assignment.region.ward,
+            assignedAt: assignment.assignedAt,
+          })) ?? [],
+      },
     };
   }
 
@@ -386,6 +427,7 @@ export class AuthService {
 
   private validateLoginDto(dto: LoginDto): void {
     this.validatePhone(dto.phone);
+    this.validateRole(dto.role);
 
     if (!dto.password) {
       throw new BadRequestException('Password is required.');
@@ -399,6 +441,12 @@ export class AuthService {
 
     if (!/^\+?[0-9]{9,15}$/.test(phone.trim())) {
       throw new BadRequestException('Phone number format is invalid.');
+    }
+  }
+
+  private validateRole(role: Role): void {
+    if (!Object.values(Role).includes(role)) {
+      throw new BadRequestException('Role is required.');
     }
   }
 

@@ -31,12 +31,13 @@ export function LoginForm() {
       const response = await apiPost<LoginResponse>("/auth/login", {
         body: {
           phone: formData.get("phone"),
-          password: formData.get("password")
+          password: formData.get("password"),
+          role: formData.get("role")
         }
       });
 
       localStorage.setItem("selapAccessToken", response.accessToken);
-      router.push("/dashboard");
+      router.push("/properties");
     } catch (caughtError) {
       setError(
         caughtError instanceof Error

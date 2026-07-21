@@ -3,14 +3,11 @@ const BACKEND_API_URL =
   process.env.NEXT_PUBLIC_API_URL ??
   "http://localhost:3001";
 
-type RouteContext = {
-  params: Promise<{
-    path: string[];
-  }>;
-};
+async function proxy(request: Request) {
+  const url = new URL(request.url);
+  const backendUrl = new URL(`${BACKEND_API_URL}/properties`);
+  backendUrl.search = url.search;
 
-async function proxy(request: Request, context: RouteContext) {
-  const { path } = await context.params;
   const headers: Record<string, string> = {
     "Content-Type": request.headers.get("Content-Type") ?? "application/json"
   };
@@ -20,7 +17,7 @@ async function proxy(request: Request, context: RouteContext) {
     headers.Authorization = authorization;
   }
 
-  const backendResponse = await fetch(`${BACKEND_API_URL}/auth/${path.join("/")}`, {
+  const backendResponse = await fetch(backendUrl, {
     body: request.method === "GET" ? undefined : await request.text(),
     headers,
     method: request.method
@@ -35,10 +32,10 @@ async function proxy(request: Request, context: RouteContext) {
   });
 }
 
-export async function GET(request: Request, context: RouteContext) {
-  return proxy(request, context);
+export function GET(request: Request) {
+  return proxy(request);
 }
 
-export async function POST(request: Request, context: RouteContext) {
-  return proxy(request, context);
+export function POST(request: Request) {
+  return proxy(request);
 }
