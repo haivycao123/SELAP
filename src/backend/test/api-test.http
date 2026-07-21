@@ -1,0 +1,27 @@
+### Variables
+@baseUrl = http://localhost:3001
+@authToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjI0LCJwaG9uZSI6IjAxMjM0NTY3ODciLCJyb2xlIjoiQ1VTVE9NRVIiLCJpYXQiOjE3ODQ2NTIxNTksImV4cCI6MTc4NTI1Njk1OX0.4WoqoJWE3RFqR9Ee0Jes8GDotNtVPzYVp9YvpC8trys
+
+
+### 1. Đăng nhập để lấy Access Token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "phone": "0123456787",
+  "password": "T@123456",
+  "role": "CUSTOMER"
+}
+
+### 2. Thêm căn hộ vào Yêu thích (ID căn hộ có trong DB)
+POST {{baseUrl}}/favorites/1
+Authorization: Bearer {{authToken}}
+
+### 3. Lấy danh sách căn hộ Yêu thích
+GET {{baseUrl}}/favorites
+Authorization: Bearer {{authToken}}
+
+### 4. Xóa căn hộ khỏi Yêu thích
+DELETE {{baseUrl}}/favorites/1
+Authorization: Bearer {{authToken}} 
