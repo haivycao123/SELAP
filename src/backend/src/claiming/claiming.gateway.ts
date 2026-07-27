@@ -10,6 +10,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { Injectable, Logger } from '@nestjs/common';
 import { TokenService } from '../auth/token.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -24,7 +25,10 @@ export class ClaimingGateway
 
   private readonly logger = new Logger(ClaimingGateway.name);
 
-  constructor(private readonly tokenService: TokenService) {}
+  constructor(
+    private readonly tokenService: TokenService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async handleConnection(client: Socket) {
     try {
@@ -40,7 +44,24 @@ export class ClaimingGateway
       const payload = this.tokenService.verifyAccessToken(token);
       client.data.user = payload;
 
+      // Join Room cá nhân của User
       client.join(`user_${payload.sub}`);
+
+      // Tự động phân vùng Room địa lý cho Sales Agent
+      if (payload.role === 'SALES_AGENT') {
+        const agentProfile = await this.prisma.agentProfile.findUnique({
+          where: { userId: payload.sub },
+          include: { regions: true },
+        });
+
+        if (agentProfile && agentProfile.regions.length > 0) {
+          agentProfile.regions.forEach((r) => {
+            const roomName = `region_${r.regionId}`;
+            client.join(roomName);
+            this.logger.log(`Agent ${payload.sub} auto-joined room: ${roomName}`);
+          });
+        }
+      }
 
       this.logger.log(`User ${payload.sub} connected on socket ${client.id}`);
     } catch (error: any) {
@@ -53,22 +74,21 @@ export class ClaimingGateway
     this.logger.log(`Client disconnected: ${client.id}`);
   }
 
-  @SubscribeMessage('joinRegionRoom')
-  handleJoinRegion(
-    @ConnectedSocket() client: Socket,
-    @MessageBody() data: { regionId: number },
-  ) {
-    const roomName = `region_${data.regionId}`;
-    client.join(roomName);
-    return { event: 'joinedRoom', data: { room: roomName } };
-  }
-
+  // Broadcast event 'new_lead' đến đúng Room địa lý
   broadcastNewLead(regionId: number, leadData: any) {
     const roomName = `region_${regionId}`;
     this.server.to(roomName).emit('new_lead', leadData);
     this.logger.log(`Broadcasted new_lead event to room ${roomName}`);
   }
 
+  // Broadcast event 'lead_claimed' đến Room địa lý để các Agent khác khóa UI Lead đó
+  broadcastLeadClaimed(regionId: number, data: { leadId: number; claimedByAgentId: number }) {
+    const roomName = `region_${regionId}`;
+    this.server.to(roomName).emit('lead_claimed', data);
+    this.logger.log(`Broadcasted lead_claimed event for lead ${data.leadId} to room ${roomName}`);
+  }
+
+  // Thông báo cho Customer khi Lead được tiếp nhận
   notifyCustomerLeadAccepted(customerId: number, data: any) {
     const roomName = `user_${customerId}`;
     this.server.to(roomName).emit('lead_accepted', data);

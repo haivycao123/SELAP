@@ -207,6 +207,14 @@ export class LeadsService {
         );
       }
 
+      // Bắn Socket thông báo cho các Agent khác trong cùng Region biết Lead đã bị Claim 
+      if (updatedLead.regionId) {
+        this.claimingGateway.broadcastLeadClaimed(updatedLead.regionId, {
+          leadId: updatedLead.id,
+          claimedByAgentId: agentUserId,
+        });
+      }
+
       return {
         message:
           'Lead claimed successfully! Customer contact information is now available.',
