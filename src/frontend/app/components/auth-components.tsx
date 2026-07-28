@@ -87,11 +87,12 @@ export function AuthCard({
   );
 }
 
-export function RoleSelector({ defaultRole }: { defaultRole: Role }) {
+export function RoleSelector({ defaultRole, roles: allowedRoles }: { defaultRole: Role; roles?: Role[] }) {
+  const visibleRoles = allowedRoles ?? roles;
   return (
     <fieldset className="roleTabs">
       <legend>ROLE</legend>
-      {roles.map((role) => (
+      {visibleRoles.map((role) => (
         <label key={role}>
           <input
             defaultChecked={role === defaultRole}

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { apiGet } from "../lib/api";
@@ -11,6 +11,7 @@ type AuthRole = "ADMIN" | "CUSTOMER" | "SALES_AGENT" | null;
 type CurrentUserResponse = {
   user: {
     role: AuthRole;
+    name?: string;
     regions?: Array<{
       id: number;
       name: string;
@@ -22,7 +23,9 @@ type CurrentUserResponse = {
 
 export function RoleNavigation() {
   const pathname = usePathname();
+  const router = useRouter();
   const [role, setRole] = useState<AuthRole>(null);
+  const [name, setName] = useState("");
   const [agentAreaLabel, setAgentAreaLabel] = useState("Area: Not assigned");
 
   useEffect(() => {
@@ -37,6 +40,7 @@ export function RoleNavigation() {
     apiGet<CurrentUserResponse>("/auth/me", { token })
       .then((data) => {
         setRole(data.user.role ?? tokenRole);
+        setName(data.user.name ?? "");
 
         if (data.user.role !== "SALES_AGENT") {
           return;
@@ -54,6 +58,11 @@ export function RoleNavigation() {
       });
   }, []);
 
+  function logout() {
+    localStorage.removeItem("selapAccessToken");
+    router.push("/auth/login");
+  }
+
   return (
     <nav className="catalogMockNav">
       <Link className="catalogMockBrand" href="/properties">
@@ -63,6 +72,9 @@ export function RoleNavigation() {
       <div className="catalogMockLinks">
         {role === "ADMIN" ? (
           <>
+            <NavLink active={pathname === "/properties"} href="/properties">
+              Catalog
+            </NavLink>
             <NavLink active={pathname === "/properties/manage"} href="/properties/manage">
               Add Property
             </NavLink>
@@ -71,9 +83,6 @@ export function RoleNavigation() {
               href="/admin/pending-agents"
             >
               Pending Agents
-            </NavLink>
-            <NavLink active={pathname === "/admin/staff"} href="#">
-              Staff Directory
             </NavLink>
           </>
         ) : role === "SALES_AGENT" ? (
@@ -94,10 +103,10 @@ export function RoleNavigation() {
             <NavLink active={pathname === "/properties"} href="/properties">
               Catalog
             </NavLink>
-            <NavLink active={pathname === "/favorites"} href="#">
+            <NavLink active={pathname === "/favorites"} href="/favorites">
               Favorites
             </NavLink>
-            <NavLink active={pathname === "/notifications"} href="#">
+            <NavLink active={pathname === "/notifications"} href="/notifications">
               Notifications
             </NavLink>
             {!role ? (
@@ -107,7 +116,7 @@ export function RoleNavigation() {
             ) : null}
           </>
         )}
-        <AccountBadge role={role} />
+        <AccountMenu name={name} onLogout={logout} role={role} />
       </div>
     </nav>
   );
@@ -129,19 +138,48 @@ function NavLink({
   );
 }
 
-function AccountBadge({ role }: { role: AuthRole }) {
-  if (role === "ADMIN") {
-    return <span className="mockAvatar mockRoleAvatar">AD</span>;
-  }
+function AccountMenu({
+  name,
+  onLogout,
+  role
+}: {
+  name: string;
+  onLogout: () => void;
+  role: AuthRole;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
 
-  if (role === "SALES_AGENT") {
-    return <span className="mockAvatar mockRoleAvatar">A</span>;
+  if (!role) {
+    return <span className="mockAvatar mockCustomerAvatar" aria-label="Customer account"><span /></span>;
   }
 
   return (
-    <span className="mockAvatar mockCustomerAvatar" aria-label="Customer account">
-      <span />
-    </span>
+    <div className="accountMenu">
+      <button
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        aria-label="Open account menu"
+        className="mockAvatar mockRoleAvatar accountMenuTrigger"
+        onClick={() => setIsOpen((current) => !current)}
+        type="button"
+      >
+        {initials || (role === "ADMIN" ? "AD" : "A")}
+      </button>
+      {isOpen ? (
+        <div className="accountDropdown" role="menu">
+          <span className="accountRole">{role === "SALES_AGENT" ? "Sales Agent" : role === "ADMIN" ? "Administrator" : "Customer"}</span>
+          {name ? <strong>{name}</strong> : null}
+          <button onClick={onLogout} role="menuitem" type="button">Log out</button>
+        </div>
+      ) : null}
+    </div>
   );
 }
 

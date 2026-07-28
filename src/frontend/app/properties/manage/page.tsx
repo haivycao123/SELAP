@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { RoleNavigation } from "../../components/role-navigation";
 import { apiDelete, apiGet, apiPatch, apiPost } from "../../lib/api";
 import {
@@ -14,6 +15,11 @@ import {
   PropertyStatus,
   PropertyType
 } from "../types";
+
+type PropertyFormImage = {
+  url: string;
+  alt: string;
+};
 
 type PropertyFormState = {
   id?: number;
@@ -31,10 +37,18 @@ type PropertyFormState = {
   bathroom: string;
   floor: string;
   regionId: string;
-  imageUrl: string;
-  imageAlt: string;
+  images: PropertyFormImage[];
   statusChangeNote: string;
 };
+
+type AuthRole = "ADMIN" | "CUSTOMER" | "SALES_AGENT" | null;
+
+type RegionOption = {
+  id: number;
+  label: string;
+};
+
+const blankImageRow: PropertyFormImage = { url: "", alt: "" };
 
 const blankForm: PropertyFormState = {
   title: "",
@@ -51,13 +65,48 @@ const blankForm: PropertyFormState = {
   bathroom: "",
   floor: "",
   regionId: "",
-  imageUrl: "",
-  imageAlt: "",
+  images: [{ ...blankImageRow }],
   statusChangeNote: ""
 };
 
+function regionLabel(region: {
+  name: string;
+  district?: string | null;
+  city?: string | null;
+}) {
+  return [region.name, region.district, region.city].filter(Boolean).join(" - ");
+}
+
+function getRoleFromToken(token: string | null): AuthRole {
+  if (!token) return null;
+  try {
+    const value = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+    const payload = JSON.parse(
+      window.atob(value.padEnd(Math.ceil(value.length / 4) * 4, "="))
+    ) as { role?: AuthRole };
+    return payload.role ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function sanitizeNumericInput(value: string) {
+  let cleaned = value.replace(/[^0-9.]/g, "");
+  const firstDot = cleaned.indexOf(".");
+  if (firstDot !== -1) {
+    cleaned =
+      cleaned.slice(0, firstDot + 1) +
+      cleaned.slice(firstDot + 1).replace(/\./g, "");
+  }
+  return cleaned;
+}
+
 export default function PropertyManagementPage() {
+  const searchParams = useSearchParams();
   const [token, setToken] = useState<string | null>(null);
+  const [role, setRole] = useState<AuthRole>(null);
+  const [adminRegions, setAdminRegions] = useState<RegionOption[]>([]);
+  const [agentRegions, setAgentRegions] = useState<RegionOption[]>([]);
   const [properties, setProperties] = useState<Property[]>([]);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [form, setForm] = useState<PropertyFormState>(blankForm);
@@ -76,6 +125,41 @@ export default function PropertyManagementPage() {
   useEffect(() => {
     setToken(localStorage.getItem("selapAccessToken"));
   }, []);
+
+  useEffect(() => {
+    if (!token) {
+      setRole(null);
+      return;
+    }
+
+    const currentRole = getRoleFromToken(token);
+    setRole(currentRole);
+
+    if (currentRole === "ADMIN") {
+      apiGet<{ data: Array<{ id: number; name: string; district: string | null; city: string | null }> }>(
+        "/admin/regions",
+        { token }
+      )
+        .then((response) => {
+          setAdminRegions(
+            response.data.map((region) => ({ id: region.id, label: regionLabel(region) }))
+          );
+        })
+        .catch(() => undefined);
+    } else if (currentRole === "SALES_AGENT") {
+      apiGet<{
+        user: {
+          regions: Array<{ id: number; name: string; district: string | null; city: string | null }>;
+        };
+      }>("/auth/me", { token })
+        .then((response) => {
+          setAgentRegions(
+            response.user.regions.map((region) => ({ id: region.id, label: regionLabel(region) }))
+          );
+        })
+        .catch(() => undefined);
+    }
+  }, [token]);
 
   const loadProperties = useCallback(async (activeToken = token) => {
     if (!activeToken) {
@@ -103,6 +187,12 @@ export default function PropertyManagementPage() {
       );
       setProperties(response.data);
 
+      const editId = Number(searchParams.get("edit"));
+      const propertyToEdit = response.data.find((property) => property.id === editId);
+      if (propertyToEdit && selectedId !== editId) {
+        editProperty(propertyToEdit);
+      }
+
       if (selectedId && !response.data.some((item) => item.id === selectedId)) {
         setSelectedId(null);
         setForm(blankForm);
@@ -116,7 +206,7 @@ export default function PropertyManagementPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [includeHidden, search, selectedId, token]);
+  }, [includeHidden, search, searchParams, selectedId, token]);
 
   useEffect(() => {
     if (!token) {
@@ -126,6 +216,17 @@ export default function PropertyManagementPage() {
 
     void loadProperties(token);
   }, [token, includeHidden, loadProperties]);
+
+  useEffect(() => {
+    if (
+      role === "SALES_AGENT" &&
+      !form.id &&
+      !form.regionId &&
+      agentRegions.length === 1
+    ) {
+      setForm((current) => ({ ...current, regionId: String(agentRegions[0].id) }));
+    }
+  }, [role, agentRegions, form.id, form.regionId]);
 
   function editProperty(property: Property) {
     setSelectedId(property.id);
@@ -148,8 +249,10 @@ export default function PropertyManagementPage() {
         property.bathroom === null ? "" : String(property.bathroom ?? ""),
       floor: property.floor === null ? "" : String(property.floor ?? ""),
       regionId: property.regionId === null ? "" : String(property.regionId ?? ""),
-      imageUrl: property.images[0]?.url ?? "",
-      imageAlt: property.images[0]?.alt ?? "",
+      images:
+        property.images.length > 0
+          ? property.images.map((image) => ({ url: image.url, alt: image.alt ?? "" }))
+          : [{ ...blankImageRow }],
       statusChangeNote: ""
     });
   }
@@ -163,6 +266,36 @@ export default function PropertyManagementPage() {
 
   function updateField(name: keyof PropertyFormState, value: string) {
     setForm((current) => ({ ...current, [name]: value }));
+  }
+
+  function updateNumericField(name: "price" | "area", value: string) {
+    updateField(name, sanitizeNumericInput(value));
+  }
+
+  function updateImageField(index: number, field: "url" | "alt", value: string) {
+    setForm((current) => ({
+      ...current,
+      images: current.images.map((image, imageIndex) =>
+        imageIndex === index ? { ...image, [field]: value } : image
+      )
+    }));
+  }
+
+  function addImageRow() {
+    setForm((current) => ({
+      ...current,
+      images: [...current.images, { ...blankImageRow }]
+    }));
+  }
+
+  function removeImageRow(index: number) {
+    setForm((current) => ({
+      ...current,
+      images:
+        current.images.length > 1
+          ? current.images.filter((_, imageIndex) => imageIndex !== index)
+          : [{ ...blankImageRow }]
+    }));
   }
 
   async function saveProperty(event: React.FormEvent<HTMLFormElement>) {
@@ -416,31 +549,55 @@ export default function PropertyManagementPage() {
                 ))}
               </select>
             </Field>
-            <Field label="Region ID">
-              <input
-                min="1"
-                onChange={(event) => updateField("regionId", event.target.value)}
-                placeholder="Required for agents"
-                type="number"
-                value={form.regionId}
-              />
+            <Field label="Region">
+              {role === "ADMIN" ? (
+                <select
+                  onChange={(event) => updateField("regionId", event.target.value)}
+                  value={form.regionId}
+                >
+                  <option value="">Select area...</option>
+                  {adminRegions.map((region) => (
+                    <option key={region.id} value={region.id}>
+                      {region.label}
+                    </option>
+                  ))}
+                </select>
+              ) : agentRegions.length > 1 ? (
+                <select
+                  onChange={(event) => updateField("regionId", event.target.value)}
+                  value={form.regionId}
+                >
+                  <option value="">Select area...</option>
+                  {agentRegions.map((region) => (
+                    <option key={region.id} value={region.id}>
+                      {region.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  disabled
+                  value={
+                    agentRegions[0]?.label ?? "No area assigned yet. Contact admin."
+                  }
+                />
+              )}
             </Field>
             <Field label="Price">
               <input
-                min="0"
-                onChange={(event) => updateField("price", event.target.value)}
+                inputMode="decimal"
+                onChange={(event) => updateNumericField("price", event.target.value)}
+                placeholder="0"
                 required
-                type="number"
                 value={form.price}
               />
             </Field>
             <Field label="Area">
               <input
-                min="0"
-                onChange={(event) => updateField("area", event.target.value)}
+                inputMode="decimal"
+                onChange={(event) => updateNumericField("area", event.target.value)}
+                placeholder="0"
                 required
-                step="0.01"
-                type="number"
                 value={form.area}
               />
             </Field>
@@ -495,19 +652,37 @@ export default function PropertyManagementPage() {
                 value={form.floor}
               />
             </Field>
-            <Field label="Image URL">
-              <input
-                onChange={(event) => updateField("imageUrl", event.target.value)}
-                placeholder="https://..."
-                value={form.imageUrl}
-              />
-            </Field>
-            <Field label="Image Alt">
-              <input
-                onChange={(event) => updateField("imageAlt", event.target.value)}
-                value={form.imageAlt}
-              />
-            </Field>
+            <div className="fullField imageFieldGroup">
+              <span>Images</span>
+              {form.images.map((image, index) => (
+                <div className="imageFieldRow" key={index}>
+                  <input
+                    onChange={(event) => updateImageField(index, "url", event.target.value)}
+                    placeholder="Image URL"
+                    value={image.url}
+                  />
+                  <input
+                    onChange={(event) => updateImageField(index, "alt", event.target.value)}
+                    placeholder="Alt text"
+                    value={image.alt}
+                  />
+                  <button
+                    className="dangerButton miniButton"
+                    onClick={() => removeImageRow(index)}
+                    type="button"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+              <button
+                className="outlineButton miniButton"
+                onClick={addImageRow}
+                type="button"
+              >
+                + Add image
+              </button>
+            </div>
             <Field label="Status Note">
               <input
                 onChange={(event) =>
@@ -578,14 +753,16 @@ function toPayload(form: PropertyFormState) {
     ward: form.ward || undefined
   };
 
-  if (form.imageUrl.trim()) {
-    payload.images = [
-      {
-        alt: form.imageAlt || undefined,
-        sortOrder: 0,
-        url: form.imageUrl
-      }
-    ];
+  const images = form.images
+    .filter((image) => image.url.trim())
+    .map((image, index) => ({
+      alt: image.alt || undefined,
+      sortOrder: index,
+      url: image.url.trim()
+    }));
+
+  if (images.length > 0) {
+    payload.images = images;
   }
 
   return payload;

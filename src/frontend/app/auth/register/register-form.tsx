@@ -50,7 +50,7 @@ export function RegisterForm() {
   return (
     <>
       <form className="formStack" onSubmit={handleSubmit}>
-        <RoleSelector defaultRole="Sales Agent" />
+        <RoleSelector defaultRole="Sales Agent" roles={["Sales Agent", "Customer"]} />
         <Field
           autoComplete="name"
           label="USER NAME"

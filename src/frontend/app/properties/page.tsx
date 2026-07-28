@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { RoleNavigation } from "../components/role-navigation";
-import { apiGet } from "../lib/api";
+import { apiDelete, apiGet, apiPost } from "../lib/api";
 import {
   formatMoney,
   formatStatus,
@@ -16,6 +17,10 @@ type CatalogFilters = {
   maxPrice: string;
   minPrice: string;
   type: string;
+};
+
+type FavoritesResponse = {
+  data: Array<{ propertyId: number }>;
 };
 
 const catalogTypeOptions = [
@@ -41,6 +46,8 @@ export default function PropertyCatalogPage() {
   const [response, setResponse] = useState<PropertyListResponse | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [savedPropertyIds, setSavedPropertyIds] = useState<number[]>([]);
+  const [savingPropertyId, setSavingPropertyId] = useState<number | null>(null);
 
   const query = useMemo(() => {
     const params = new URLSearchParams({
@@ -95,6 +102,17 @@ export default function PropertyCatalogPage() {
     };
   }, [query]);
 
+  useEffect(() => {
+    const token = localStorage.getItem("selapAccessToken");
+    if (!token) return;
+
+    apiGet<FavoritesResponse>("/favorites", { token })
+      .then((response) => setSavedPropertyIds(response.data.map((favorite) => favorite.propertyId)))
+      .catch(() => {
+        // The public catalogue remains available when a saved list cannot be loaded.
+      });
+  }, []);
+
   function updateFilter(name: keyof CatalogFilters, value: string) {
     setFilters((current) => ({ ...current, [name]: value }));
   }
@@ -102,6 +120,32 @@ export default function PropertyCatalogPage() {
   function applyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setAppliedFilters(filters);
+  }
+
+  async function toggleSavedProperty(propertyId: number) {
+    if (savingPropertyId !== null) return;
+    const token = localStorage.getItem("selapAccessToken");
+    if (!token) {
+      setError("Please sign in to save properties.");
+      return;
+    }
+
+    const isSaved = savedPropertyIds.includes(propertyId);
+    setSavingPropertyId(propertyId);
+    setError("");
+    try {
+      if (isSaved) {
+        await apiDelete(`/favorites/${propertyId}`, { token });
+        setSavedPropertyIds((current) => current.filter((id) => id !== propertyId));
+      } else {
+        await apiPost(`/favorites/${propertyId}`, { token });
+        setSavedPropertyIds((current) => [...current, propertyId]);
+      }
+    } catch (caughtError) {
+      setError(caughtError instanceof Error ? caughtError.message : "Unable to update saved properties.");
+    } finally {
+      setSavingPropertyId(null);
+    }
   }
 
   const properties = response?.data ?? [];
@@ -176,6 +220,9 @@ export default function PropertyCatalogPage() {
                   gradientIndex={index}
                   key={property.id}
                   property={property}
+                  isSaved={savedPropertyIds.includes(property.id)}
+                  isSaving={savingPropertyId === property.id}
+                  onToggleSaved={toggleSavedProperty}
                 />
               ))
             : null}
@@ -187,18 +234,33 @@ export default function PropertyCatalogPage() {
 
 function PropertyCard({
   gradientIndex,
-  property
+  property,
+  isSaved,
+  isSaving,
+  onToggleSaved
 }: {
   gradientIndex: number;
   property: Property;
+  isSaved: boolean;
+  isSaving: boolean;
+  onToggleSaved: (propertyId: number) => void;
 }) {
   return (
     <article className="mockPropertyCard">
-      <PropertyPhoto gradientIndex={gradientIndex} property={property} />
-      <button className="mockHeartButton" type="button" aria-label="Save">
+      <Link aria-label={`View ${property.title}`} className="propertyCardLink" href={`/properties/${property.id}`}>
+        <PropertyPhoto gradientIndex={gradientIndex} property={property} />
+      </Link>
+      <button
+        aria-label={isSaved ? "Remove from saved properties" : "Save property"}
+        aria-pressed={isSaved}
+        className={isSaved ? "mockHeartButton mockHeartSaved" : "mockHeartButton"}
+        disabled={isSaving}
+        onClick={() => onToggleSaved(property.id)}
+        type="button"
+      >
         <span />
       </button>
-      <div className="mockCardBody">
+      <Link className="mockCardBody propertyCardLink" href={`/properties/${property.id}`}>
         <h2>{property.title}</h2>
         <p className="mockPrice">{formatMoney(property.price)} / month</p>
         <p className="mockMeta">
@@ -210,7 +272,7 @@ function PropertyCard({
         <p className={`mockStatus status-${property.status}`}>
           {formatStatus(property.status)}
         </p>
-      </div>
+      </Link>
     </article>
   );
 }
