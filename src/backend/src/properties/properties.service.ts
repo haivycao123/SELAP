@@ -138,9 +138,8 @@ export class PropertiesService {
   async findManageById(rawId: string, user: AuthenticatedUser) {
     this.assertCanManageProperties(user);
     const id = this.parseId(rawId, 'Property id');
-    const where = await this.applyUserScope({ id }, user);
-    const property = await this.prisma.property.findFirst({
-      where,
+    const property = await this.prisma.property.findUnique({
+      where: { id },
       include: {
         ...propertyInclude,
         statusHistory: {
@@ -159,10 +158,36 @@ export class PropertiesService {
     });
 
     if (!property) {
-      throw new NotFoundException('Property not found or access is denied.');
+      throw new NotFoundException('Property not found.');
     }
 
+    await this.assertCanManagePropertyRegion(user, property.regionId);
+
     return property;
+  }
+
+  async findRegionOptions(user: AuthenticatedUser) {
+    this.assertCanManageProperties(user);
+
+    const where =
+      user.role === Role.SALES_AGENT
+        ? { id: { in: await this.getAgentRegionIds(user.id) } }
+        : {};
+
+    const regions = await this.prisma.region.findMany({
+      where,
+      orderBy: [{ city: 'asc' }, { district: 'asc' }, { name: 'asc' }],
+    });
+
+    return { data: regions };
+  }
+
+  async findPublicRegionOptions() {
+    const regions = await this.prisma.region.findMany({
+      orderBy: [{ city: 'asc' }, { district: 'asc' }, { name: 'asc' }],
+    });
+
+    return { data: regions };
   }
 
   async create(dto: CreatePropertyDto, user: AuthenticatedUser) {
@@ -550,15 +575,16 @@ export class PropertiesService {
   }
 
   private async findManageableProperty(id: number, user: AuthenticatedUser) {
-    const where = await this.applyUserScope({ id }, user);
-    const property = await this.prisma.property.findFirst({
-      where,
+    const property = await this.prisma.property.findUnique({
+      where: { id },
       include: { region: true },
     });
 
     if (!property) {
-      throw new NotFoundException('Property not found or access is denied.');
+      throw new NotFoundException('Property not found.');
     }
+
+    await this.assertCanManagePropertyRegion(user, property.regionId);
 
     return property;
   }
@@ -612,6 +638,33 @@ export class PropertiesService {
     if (!regionIds.includes(regionId)) {
       throw new ForbiddenException(
         'Sales agents can only manage properties in assigned regions.',
+      );
+    }
+  }
+
+  private async assertCanManagePropertyRegion(
+    user: AuthenticatedUser,
+    regionId: number | null,
+  ): Promise<void> {
+    if (user.role === Role.ADMIN) {
+      return;
+    }
+
+    if (user.role !== Role.SALES_AGENT) {
+      throw new ForbiddenException('Only admins and sales agents can manage properties.');
+    }
+
+    if (!regionId) {
+      throw new ForbiddenException(
+        'Sales agents can only edit or delete properties in their assigned regions.',
+      );
+    }
+
+    const regionIds = await this.getAgentRegionIds(user.id);
+
+    if (!regionIds.includes(regionId)) {
+      throw new ForbiddenException(
+        'Sales agents can only edit or delete properties in their assigned regions.',
       );
     }
   }

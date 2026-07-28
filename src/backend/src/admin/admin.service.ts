@@ -26,6 +26,35 @@ const pendingAgentInclude = {
   },
 } satisfies Prisma.UserInclude;
 
+const staffInclude = {
+  _count: {
+    select: {
+      assignedLeads: true,
+      createdProperties: true,
+    },
+  },
+  agentProfile: {
+    include: {
+      regions: {
+        include: { region: true },
+        orderBy: { assignedAt: 'desc' as const },
+      },
+    },
+  },
+  approvedBy: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+  rejectedBy: {
+    select: {
+      id: true,
+      name: true,
+    },
+  },
+} satisfies Prisma.UserInclude;
+
 const defaultRegions = [
   { code: 'TAN_BINH', name: 'Tan Binh', city: 'Ho Chi Minh City', district: 'Tan Binh' },
   { code: 'PHU_NHUAN', name: 'Phu Nhuan', city: 'Ho Chi Minh City', district: 'Phu Nhuan' },
@@ -61,6 +90,20 @@ export class AdminService {
     });
 
     return { data: agents.map((agent) => this.toAgentResponse(agent)) };
+  }
+
+  async findStaff(user: AuthenticatedUser) {
+    this.assertAdmin(user);
+
+    const staff = await this.prisma.user.findMany({
+      where: {
+        role: { in: [Role.ADMIN, Role.SALES_AGENT] },
+      },
+      include: staffInclude,
+      orderBy: [{ role: 'asc' }, { createdAt: 'desc' }],
+    });
+
+    return { data: staff.map((member) => this.toStaffResponse(member)) };
   }
 
   async approveAgent(
@@ -216,6 +259,50 @@ export class AdminService {
           ward: assignment.region.ward,
           assignedAt: assignment.assignedAt,
         })) ?? [],
+    };
+  }
+
+  private toStaffResponse(
+    member: Prisma.UserGetPayload<{ include: typeof staffInclude }>,
+  ) {
+    return {
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      phone: member.phone,
+      role: member.role,
+      status: member.status,
+      createdAt: member.createdAt,
+      updatedAt: member.updatedAt,
+      approvedAt: member.approvedAt,
+      rejectedAt: member.rejectedAt,
+      rejectReason: member.rejectReason,
+      approvedBy: member.approvedBy
+        ? {
+            id: member.approvedBy.id,
+            name: member.approvedBy.name,
+          }
+        : null,
+      rejectedBy: member.rejectedBy
+        ? {
+            id: member.rejectedBy.id,
+            name: member.rejectedBy.name,
+          }
+        : null,
+      regions:
+        member.agentProfile?.regions.map((assignment) => ({
+          id: assignment.region.id,
+          name: assignment.region.name,
+          code: assignment.region.code,
+          city: assignment.region.city,
+          district: assignment.region.district,
+          ward: assignment.region.ward,
+          assignedAt: assignment.assignedAt,
+        })) ?? [],
+      stats: {
+        assignedLeads: member._count.assignedLeads,
+        createdProperties: member._count.createdProperties,
+      },
     };
   }
 

@@ -79,6 +79,12 @@ export function RoleNavigation() {
               Add Property
             </NavLink>
             <NavLink
+              active={pathname === "/admin/staff-directory"}
+              href="/admin/staff-directory"
+            >
+              Staff Directory
+            </NavLink>
+            <NavLink
               active={pathname === "/admin/pending-agents"}
               href="/admin/pending-agents"
             >

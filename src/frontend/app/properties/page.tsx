@@ -13,14 +13,27 @@ import {
 
 type CatalogFilters = {
   q: string;
-  city: string;
   maxPrice: string;
   minPrice: string;
+  regionId: string;
   type: string;
 };
 
 type FavoritesResponse = {
   data: Array<{ propertyId: number }>;
+};
+
+type RegionOption = {
+  id: number;
+  name: string;
+  code: string;
+  city: string | null;
+  district: string | null;
+  ward: string | null;
+};
+
+type RegionOptionsResponse = {
+  data: RegionOption[];
 };
 
 const catalogTypeOptions = [
@@ -34,9 +47,9 @@ const catalogTypeOptions = [
 
 const initialFilters: CatalogFilters = {
   q: "",
-  city: "",
   maxPrice: "",
   minPrice: "",
+  regionId: "",
   type: ""
 };
 
@@ -46,6 +59,7 @@ export default function PropertyCatalogPage() {
   const [response, setResponse] = useState<PropertyListResponse | null>(null);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [regions, setRegions] = useState<RegionOption[]>([]);
   const [savedPropertyIds, setSavedPropertyIds] = useState<number[]>([]);
   const [savingPropertyId, setSavingPropertyId] = useState<number | null>(null);
 
@@ -113,6 +127,14 @@ export default function PropertyCatalogPage() {
       });
   }, []);
 
+  useEffect(() => {
+    apiGet<RegionOptionsResponse>("/properties/regions/public-options")
+      .then((response) => setRegions(response.data))
+      .catch(() => {
+        // The catalogue can still be searched when region options fail to load.
+      });
+  }, []);
+
   function updateFilter(name: keyof CatalogFilters, value: string) {
     setFilters((current) => ({ ...current, [name]: value }));
   }
@@ -162,12 +184,18 @@ export default function PropertyCatalogPage() {
             placeholder="Search by property, street or building"
             value={filters.q}
           />
-          <input
+          <select
             aria-label="Area"
-            onChange={(event) => updateFilter("city", event.target.value)}
-            placeholder="Area: Thu Duc"
-            value={filters.city}
-          />
+            onChange={(event) => updateFilter("regionId", event.target.value)}
+            value={filters.regionId}
+          >
+            <option value="">Area</option>
+            {regions.map((region) => (
+              <option key={region.id} value={region.id}>
+                {formatRegionOption(region)}
+              </option>
+            ))}
+          </select>
           <div className="mockPriceField">
             <input
               aria-label="Minimum price"
@@ -312,6 +340,10 @@ function PropertyPhoto({
       }`}
     />
   );
+}
+
+function formatRegionOption(region: RegionOption) {
+  return [region.name, region.district, region.city].filter(Boolean).join(" - ");
 }
 
 function applyTypeFilter(params: URLSearchParams, value: string) {

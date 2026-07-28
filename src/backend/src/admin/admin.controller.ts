@@ -21,6 +21,11 @@ export class AdminController {
     return this.adminService.findPendingAgents(user);
   }
 
+  @Get('staff')
+  findStaff(@CurrentUser() user: AuthenticatedUser) {
+    return this.adminService.findStaff(user);
+  }
+
   @Post('agents/:id/approve')
   approveAgent(
     @Param('id') id: string,

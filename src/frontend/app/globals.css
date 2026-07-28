@@ -916,6 +916,205 @@ button {
   max-width: 444px;
 }
 
+.staffDirectoryPage {
+  border: 0;
+  padding-top: 36px;
+}
+
+.staffHeader {
+  align-items: end;
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin: 42px 52px 0;
+}
+
+.staffHeader h1 {
+  font-size: 28px;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.staffSummary {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(4, minmax(116px, 1fr));
+}
+
+.staffSummary div {
+  background: #f5fafb;
+  border: 1px solid #d8e4e8;
+  border-radius: 8px;
+  display: grid;
+  gap: 4px;
+  min-height: 74px;
+  padding: 12px 16px;
+}
+
+.staffSummary strong {
+  color: #1d647b;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.staffSummary span {
+  color: #667780;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.staffNotice {
+  margin-top: 20px;
+}
+
+.staffToolbar {
+  background: #ffffff;
+  border: 1px solid #d8e4e8;
+  border-radius: 8px;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 1.6fr minmax(190px, 0.5fr) minmax(190px, 0.5fr);
+  margin: 30px 52px 0;
+  padding: 18px;
+}
+
+.staffToolbar label {
+  display: grid;
+  gap: 8px;
+}
+
+.staffToolbar span {
+  color: #52656e;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.staffToolbar input,
+.staffToolbar select {
+  background: #ffffff;
+  border: 1.2px solid #c9d9de;
+  border-radius: 8px;
+  color: #17252c;
+  height: 44px;
+  outline: 0;
+  padding: 0 14px;
+  width: 100%;
+}
+
+.staffToolbar input:focus,
+.staffToolbar select:focus {
+  border-color: #328ba8;
+  box-shadow: 0 0 0 3px rgba(50, 139, 168, 0.12);
+}
+
+.staffPanel {
+  background: #ffffff;
+  border: 1.25px solid #d8e4e8;
+  box-shadow: 0 8px 22px rgba(29, 100, 123, 0.12);
+  margin: 24px 52px 0;
+  min-height: 360px;
+  overflow: hidden;
+}
+
+.staffTableHead,
+.staffRow {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(230px, 1.35fr) minmax(120px, 0.55fr) minmax(130px, 0.6fr) minmax(250px, 1.25fr) minmax(150px, 0.7fr) minmax(170px, 0.75fr);
+}
+
+.staffTableHead {
+  background: #e8f5f8;
+  color: #52656e;
+  font-size: 12px;
+  font-weight: 800;
+  height: 54px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.staffTableHead span,
+.staffRow > * {
+  padding-left: 24px;
+  padding-right: 14px;
+}
+
+.staffRow {
+  border-top: 1px solid #dbe7eb;
+  min-height: 112px;
+}
+
+.staffRolePill,
+.staffStatusPill {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 900;
+  height: 30px;
+  justify-content: center;
+  justify-self: start;
+  padding: 0 14px;
+}
+
+.staffRolePill {
+  background: #e8f5f8;
+  border: 1px solid #b7d9e3;
+  color: #1d647b;
+}
+
+.staffStatus-ACTIVE {
+  background: #e6f7eb;
+  border: 1px solid #37a55b;
+  color: #157347;
+}
+
+.staffStatus-PENDING {
+  background: #fff4cc;
+  border: 1px solid #e5b93d;
+  color: #8b6500;
+}
+
+.staffStatus-REJECTED,
+.staffStatus-SUSPENDED {
+  background: #fce8e8;
+  border: 1px solid #cf3f3f;
+  color: #b52a2a;
+}
+
+.staffRegions,
+.staffActivity,
+.staffDates {
+  display: grid;
+  gap: 7px;
+}
+
+.staffRegions span {
+  background: #f5fafb;
+  border: 1px solid #d8e4e8;
+  border-radius: 999px;
+  color: #52656e;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  justify-self: start;
+  line-height: 1.25;
+  padding: 7px 10px;
+}
+
+.staffRegions em,
+.staffActivity span,
+.staffDates span {
+  color: #667780;
+  font-size: 13px;
+  font-style: normal;
+}
+
+.staffDates strong {
+  color: #17252c;
+  font-size: 13px;
+}
+
 .secondaryDashboardButton {
   background: var(--primary-dark);
 }
@@ -1001,6 +1200,24 @@ button {
   font-size: clamp(30px, 4vw, 48px);
   line-height: 1.05;
   margin: 0;
+}
+
+.propertyScreenHeader {
+  display: grid;
+  gap: 8px;
+  padding: 42px 0 22px;
+}
+
+.propertyScreenHeader h1 {
+  font-size: clamp(28px, 3.4vw, 44px);
+  line-height: 1.05;
+  margin: 0;
+}
+
+.propertyScreenLead {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 8px 0 0;
 }
 
 .catalogStats {
@@ -1362,11 +1579,156 @@ button {
   grid-template-columns: minmax(0, 1.3fr) minmax(360px, 0.7fr);
 }
 
+.managementListGrid {
+  grid-template-columns: 1fr;
+}
+
+.propertyScreenFormWrap {
+  display: block;
+}
+
 .tablePanel,
 .editPanel {
   background: #ffffff;
   border: 1px solid var(--line);
   border-radius: 8px;
+}
+
+.propertyScreenPanel {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  display: grid;
+  gap: 36px;
+  margin: 42px 0 0;
+  min-height: 500px;
+  padding: 58px 56px 28px;
+}
+
+.propertyScreenPanel .formHeading {
+  display: grid;
+  gap: 12px;
+}
+
+.propertyScreenPanel .formHeading h2 {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+}
+
+.propertyFormColumns {
+  display: grid;
+  gap: 92px;
+  grid-template-columns: minmax(360px, 0.9fr) minmax(420px, 1.1fr);
+}
+
+.propertyFormColumn {
+  align-content: start;
+  display: grid;
+  gap: 18px;
+}
+
+.propertyFormColumn h3 {
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0 0 10px;
+}
+
+.propertyFormColumn label,
+.propertyTextareaField {
+  display: grid;
+  gap: 9px;
+}
+
+.propertyFormColumn label > span,
+.propertyTextareaField > span,
+.propertyUploadField > span {
+  color: #52656e;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.propertyFormColumn input,
+.propertyFormColumn select,
+.propertyTextareaField textarea {
+  background: #ffffff;
+  border: 1px solid #c9d9de;
+  border-radius: 0;
+  color: var(--ink);
+  font-size: 13px;
+  height: 42px;
+  outline: 0;
+  padding: 0 18px;
+  width: 100%;
+}
+
+.propertyTextareaField textarea {
+  height: 58px;
+  padding: 16px 18px;
+  resize: vertical;
+}
+
+.propertyFormPair,
+.propertyMetricGrid {
+  display: grid;
+  gap: 32px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.propertyFormPairWide {
+  grid-template-columns: minmax(0, 1.4fr) minmax(120px, 0.6fr);
+}
+
+.propertyMetricGrid {
+  grid-template-columns: repeat(4, minmax(92px, 1fr));
+}
+
+.propertyUploadField {
+  display: grid;
+  gap: 10px;
+}
+
+.propertyUploadDropzone {
+  border: 2px dashed #8fc6d5;
+  display: grid;
+  min-height: 138px;
+  place-items: center;
+  position: relative;
+  padding: 22px;
+}
+
+.propertyUploadDropzone input {
+  cursor: pointer;
+  inset: 0;
+  opacity: 0;
+  position: absolute;
+}
+
+.propertyUploadDropzone strong {
+  color: var(--primary);
+  font-size: 62px;
+  font-weight: 300;
+  line-height: 1;
+  margin-top: 0;
+}
+
+.propertyUploadDropzone small {
+  color: var(--ink);
+  font-size: 13px;
+  margin-top: -8px;
+}
+
+.propertyScreenPanel .formActions {
+  display: flex;
+  gap: 18px;
+  justify-content: flex-end;
+}
+
+.propertyScreenPanel .formActions button {
+  border-radius: 0;
+  min-width: 110px;
+  width: auto;
 }
 
 .tableToolbar {
@@ -1472,6 +1834,74 @@ button {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.imageUploadControl {
+  align-items: center;
+  display: grid;
+  gap: 8px;
+}
+
+.imageUploadControl input[type="file"] {
+  background: #ffffff;
+  border: 1px solid var(--input-line);
+  border-radius: 8px;
+  color: var(--muted);
+  min-height: 46px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+.imageUploadControl span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.imagePreviewField {
+  align-self: end;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-height: 88px;
+  overflow: hidden;
+}
+
+.imagePreviewField img {
+  display: block;
+  height: 100%;
+  max-height: 150px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.imageGalleryField {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+}
+
+.imageGalleryItem {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 8px;
+  overflow: hidden;
+  padding: 8px;
+}
+
+.imageGalleryItem img {
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+  display: block;
+  object-fit: cover;
+  width: 100%;
+}
+
+.imageGalleryItem input {
+  min-height: 38px;
+}
+
+.imageGalleryItem button {
+  width: 100%;
+}
+
 .fullField {
   grid-column: 1 / -1;
 }
@@ -1533,9 +1963,30 @@ button {
   .approvalPanel,
   .approvalHeader,
   .approvalNotice,
-  .approvalError {
+  .approvalError,
+  .staffHeader,
+  .staffPanel,
+  .staffToolbar {
     margin-left: 0;
     margin-right: 0;
+  }
+
+  .staffHeader {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .staffToolbar {
+    grid-template-columns: 1fr;
+  }
+
+  .staffPanel {
+    overflow-x: auto;
+  }
+
+  .staffTableHead,
+  .staffRow {
+    min-width: 1080px;
   }
 
   .filterBand {
@@ -1552,6 +2003,10 @@ button {
 
   .managementGrid {
     grid-template-columns: 1fr;
+  }
+
+  .propertyScreenPanel .formGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .editPanel {
@@ -1607,6 +2062,10 @@ button {
     margin-top: 24px;
   }
 
+  .staffSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .mockPropertyCard {
     min-height: auto;
   }
@@ -1629,8 +2088,14 @@ button {
   .filterBand,
   .propertyGrid,
   .tableToolbar,
-  .formGrid {
+  .formGrid,
+  .propertyScreenPanel .formGrid {
     grid-template-columns: 1fr;
+  }
+
+  .propertyScreenPanel .fullField,
+  .formSectionTitle {
+    grid-column: 1 / -1;
   }
 
   .propertyFacts,
@@ -1849,6 +2314,9 @@ button {
 .notificationList { display: grid; gap: 10px; margin: 16px 52px 0; }
 .notificationItem { align-items: flex-start; background: #ffffff; border: 1px solid #d8e4e8; display: flex; gap: 16px; min-height: 96px; padding: 18px 20px; }
 .notificationItem.unread { background: #f4fbfd; border-color: #a7d5e2; }
+.clickableNotification { cursor: pointer; }
+.clickableNotification:hover { border-color: #328ba8; box-shadow: 0 8px 18px rgba(29, 100, 123, 0.1); }
+.clickableNotification:focus { border-color: #328ba8; box-shadow: 0 0 0 4px rgba(50, 139, 168, 0.14); outline: 0; }
 .notificationIcon { align-items: center; background: #e8f5f8; border-radius: 999px; color: #1d647b; display: inline-flex; flex: 0 0 auto; font-size: 18px; font-weight: 800; height: 38px; justify-content: center; width: 38px; }
 .icon-PROPERTY_FAVORITE_CHANGED { background: #fff1f3; color: #d83f58; }
 .icon-ACCOUNT_APPROVED, .icon-ACCOUNT_REJECTED { background: #e6f7eb; color: #157347; }

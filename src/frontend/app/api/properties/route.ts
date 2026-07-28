@@ -9,16 +9,20 @@ async function proxy(request: Request) {
   backendUrl.search = url.search;
 
   const headers: Record<string, string> = {
-    "Content-Type": request.headers.get("Content-Type") ?? "application/json"
   };
+  const contentType = request.headers.get("Content-Type");
   const authorization = request.headers.get("Authorization");
+
+  if (contentType) {
+    headers["Content-Type"] = contentType;
+  }
 
   if (authorization) {
     headers.Authorization = authorization;
   }
 
   const backendResponse = await fetch(backendUrl, {
-    body: request.method === "GET" ? undefined : await request.text(),
+    body: request.method === "GET" ? undefined : await request.arrayBuffer(),
     headers,
     method: request.method
   });

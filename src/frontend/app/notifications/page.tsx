@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { RoleNavigation } from "../components/role-navigation";
 import { apiGet, apiPatch } from "../lib/api";
 
 type Notification = {
+  data?: {
+    propertyId?: number | string;
+  } | null;
   id: number;
   type: string;
   title: string;
@@ -16,6 +20,7 @@ type Notification = {
 type NotificationsResponse = { data: Notification[]; meta: { unreadCount: number } };
 
 export default function NotificationsPage() {
+  const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -50,6 +55,23 @@ export default function NotificationsPage() {
     } catch (caughtError) {
       setError(caughtError instanceof Error ? caughtError.message : "Unable to update notification.");
     }
+  }
+
+  async function openNotification(notification: Notification) {
+    const propertyId = getNotificationPropertyId(notification);
+
+    if (!propertyId) {
+      if (!notification.readAt) {
+        await markAsRead(notification.id);
+      }
+      return;
+    }
+
+    if (!notification.readAt) {
+      await markAsRead(notification.id);
+    }
+
+    router.push(`/properties/${propertyId}`);
   }
 
   async function markAllAsRead() {
@@ -94,8 +116,26 @@ export default function NotificationsPage() {
         <section className="notificationList" aria-live="polite">
           {isLoading ? Array.from({ length: 4 }).map((_, index) => <div className="notificationItem notificationSkeleton" key={index} />) : null}
           {!isLoading && !error && displayedNotifications.length === 0 ? <EmptyNotifications filter={activeFilter} /> : null}
-          {!isLoading ? displayedNotifications.map((notification) => (
-            <article className={notification.readAt ? "notificationItem" : "notificationItem unread"} key={notification.id}>
+          {!isLoading ? displayedNotifications.map((notification) => {
+            const propertyId = getNotificationPropertyId(notification);
+
+            return (
+            <article
+              className={[
+                notification.readAt ? "notificationItem" : "notificationItem unread",
+                propertyId ? "clickableNotification" : ""
+              ].filter(Boolean).join(" ")}
+              key={notification.id}
+              onClick={() => openNotification(notification)}
+              role={propertyId ? "button" : undefined}
+              tabIndex={propertyId ? 0 : undefined}
+              onKeyDown={(event) => {
+                if (propertyId && (event.key === "Enter" || event.key === " ")) {
+                  event.preventDefault();
+                  void openNotification(notification);
+                }
+              }}
+            >
               <span className={`notificationIcon icon-${notification.type}`}>{iconFor(notification.type)}</span>
               <div className="notificationContent">
                 <div className="notificationTitleRow">
@@ -105,9 +145,10 @@ export default function NotificationsPage() {
                 <p>{notification.message}</p>
                 <time dateTime={notification.createdAt}>{relativeTime(notification.createdAt)}</time>
               </div>
-              {!notification.readAt ? <button className="readButton" onClick={() => markAsRead(notification.id)} type="button">Mark read</button> : null}
+              {!notification.readAt ? <button className="readButton" onClick={(event) => { event.stopPropagation(); void markAsRead(notification.id); }} type="button">Mark read</button> : null}
             </article>
-          )) : null}
+          );
+          }) : null}
         </section>
       </div>
     </main>
@@ -123,6 +164,13 @@ function iconFor(type: string) {
   if (type === "PROPERTY_FAVORITE_CHANGED") return "♥";
   if (type.includes("ACCOUNT")) return "✓";
   return "•";
+}
+
+function getNotificationPropertyId(notification: Notification) {
+  const propertyId = notification.data?.propertyId;
+  const parsed = Number(propertyId);
+
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
 function relativeTime(value: string) {

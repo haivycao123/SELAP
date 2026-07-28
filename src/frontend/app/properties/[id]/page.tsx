@@ -20,6 +20,7 @@ export default function PropertyDetailPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isCheckingEditAccess, setIsCheckingEditAccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -76,6 +77,30 @@ export default function PropertyDetailPage() {
     }
   }
 
+  async function editProperty() {
+    const token = localStorage.getItem("selapAccessToken");
+
+    if (!token || !property) {
+      router.push("/auth/login");
+      return;
+    }
+
+    setIsCheckingEditAccess(true);
+    setError("");
+
+    try {
+      await apiGet(`/properties/manage/${property.id}`, { token });
+      router.push(`/properties/manage?edit=${property.id}&returnTo=${encodeURIComponent(`/properties/${property.id}`)}`);
+    } catch (caughtError) {
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : "You can only edit properties in your assigned regions."
+      );
+      setIsCheckingEditAccess(false);
+    }
+  }
+
   const images = property?.images ?? [];
   const image = images[activeImage] ?? images[0];
   const canManage = role === "ADMIN" || role === "SALES_AGENT";
@@ -123,13 +148,13 @@ export default function PropertyDetailPage() {
               {error ? <p className="detailError">{error}</p> : null}
               {canManage ? (
                 <div className="detailActions">
-                  <button className="detailEditButton" onClick={() => router.push(`/properties/manage?edit=${property.id}`)} type="button">Edit</button>
+                  <button className="detailEditButton" disabled={isCheckingEditAccess} onClick={editProperty} type="button">{isCheckingEditAccess ? "Checking..." : "Edit"}</button>
                   <button className="detailDeleteButton" disabled={isDeleting} onClick={deleteProperty} type="button">{isDeleting ? "Deleting…" : "Delete"}</button>
                 </div>
               ) : (
                 <div className="detailActions">
                   <button className="detailEditButton" type="button">Request consultation</button>
-                  <button className="detailSaveButton" disabled={isSaving} onClick={toggleSave} type="button">{isSaving ? "Saving…" : isSaved ? "Saved to Favorites" : "Save to Favorites"}</button>
+                  <button className="detailSaveButton" disabled={isSaving} onClick={toggleSave} type="button">{isSaving ? "Saving..." : isSaved ? "Move To Favorites" : "Save to Favorites"}</button>
                 </div>
               )}
             </aside>

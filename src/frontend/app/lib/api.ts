@@ -3,6 +3,11 @@ type ApiOptions = {
   token?: string | null;
 };
 
+type UploadOptions = {
+  file: File;
+  token?: string | null;
+};
+
 export async function apiPost<T>(path: string, options: ApiOptions = {}) {
   return apiRequest<T>(path, {
     body: options.body,
@@ -31,6 +36,39 @@ export async function apiDelete<T>(path: string, options: ApiOptions = {}) {
     method: "DELETE",
     token: options.token
   });
+}
+
+export async function apiUploadImage<T>(
+  path: string,
+  options: UploadOptions
+) {
+  const formData = new FormData();
+  formData.append("image", options.file);
+
+  const headers: Record<string, string> = {};
+
+  if (options.token) {
+    headers.Authorization = `Bearer ${options.token}`;
+  }
+
+  const response = await fetch(`/api${path}`, {
+    body: formData,
+    headers,
+    method: "POST"
+  });
+
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    const message =
+      typeof data.message === "string"
+        ? data.message
+        : "Image upload failed. Please try again.";
+
+    throw new Error(message);
+  }
+
+  return data as T;
 }
 
 async function apiRequest<T>(
