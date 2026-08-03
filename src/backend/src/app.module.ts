@@ -7,6 +7,8 @@ import { PropertiesModule } from './properties/properties.module';
 import { AdminModule } from './admin/admin.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { LeadsModule } from './leads/leads.module';
+import { ClaimingModule } from './claiming/claiming.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { NotificationsModule } from './notifications/notifications.module';
     AdminModule,
     FavoritesModule,
     NotificationsModule,
+    LeadsModule,
+    ClaimingModule,
   ],
   controllers: [AppController],
   providers: [AppService],
