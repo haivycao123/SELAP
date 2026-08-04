@@ -43,6 +43,20 @@ export class LeadsService {
       throw new BadRequestException('Property is no longer available.');
     }
 
+    const existingActiveLead = await this.prisma.lead.findFirst({
+      where: {
+        customerId,
+        propertyId: dto.propertyId,
+        status: LeadStatus.NEW,
+      },
+    });
+
+    if (existingActiveLead) {
+      throw new BadRequestException(
+        'You already have a pending consultation request for this property. Please wait for an agent to accept it.',
+      );
+    }
+
     const lead = await this.prisma.lead.create({
       data: {
         customerId,
@@ -113,9 +127,30 @@ export class LeadsService {
       });
 
       if (updatedLead.customerId) {
+        const propertyTitle = updatedLead.property?.title || 'Property';
+        const notificationTitle = 'Consultation Request Accepted';
+        const notificationMessage = `Your consultation request for ${propertyTitle} has been accepted by ${agentUser.name}. They will contact you shortly.`;
+
+        // Lưu thông báo vào Database để hiển thị trong tab Notifications
+        await this.prisma.notification.create({
+          data: {
+            userId: updatedLead.customerId,
+            type: 'LEAD_ACCEPTED',
+            title: notificationTitle,
+            message: notificationMessage,
+            data: {
+              leadId: updatedLead.id,
+              propertyId: updatedLead.propertyId,
+            },
+          },
+        });
+
+        // Phát WebSocket Real-time cho Customer
         this.claimingGateway.notifyCustomerLeadAccepted(updatedLead.customerId, {
           leadId: updatedLead.id,
           agentName: agentUser.name,
+          propertyTitle: propertyTitle,
+          message: notificationMessage,
         });
       }
 
