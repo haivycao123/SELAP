@@ -4,7 +4,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
+import { io, Socket } from "socket.io-client";
 import { apiGet } from "../lib/api";
+import { Toast } from "./toast";
 
 type AuthRole = "ADMIN" | "CUSTOMER" | "SALES_AGENT" | null;
 
@@ -27,6 +29,8 @@ export function RoleNavigation() {
   const [role, setRole] = useState<AuthRole>(null);
   const [name, setName] = useState("");
   const [agentAreaLabel, setAgentAreaLabel] = useState("Area: Not assigned");
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "info" } | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("selapAccessToken");
@@ -56,6 +60,36 @@ export function RoleNavigation() {
       .catch(() => {
         setRole(tokenRole);
       });
+
+    // Lắng nghe Real-time Socket cho Customer
+    if (tokenRole === "CUSTOMER" && token) {
+      const socket: Socket = io("http://localhost:3001/claiming", {
+        auth: { token },
+        transports: ["websocket", "polling"],
+      });
+
+       socket.on("lead_accepted", (data: { leadId: number; agentName: string; propertyTitle?: string; message?: string }) => {
+        // Tăng đếm số thông báo chưa đọc trên Navigation Badge
+        setUnreadCount((prev) => prev + 1);
+
+        // Phát thông báo Toast nổi bật
+        const toastText = data.message || `Your consultation request for ${data.propertyTitle || "Property"} has been accepted by ${data.agentName}. They will contact you shortly.`;
+
+        setToast({
+          message: toastText,
+          type: "success",
+        });
+
+        try {
+          new Audio("/sounds/lead-notification.mp3").play().catch(() => {});
+        } catch {}
+      });
+
+      return () => {
+        socket.disconnect();
+      };
+    }
+
   }, []);
 
   function logout() {
@@ -93,7 +127,7 @@ export function RoleNavigation() {
           </>
         ) : role === "SALES_AGENT" ? (
           <>
-            <NavLink active={pathname === "/agent/leads"} href="#">
+            <NavLink active={pathname === "/agent/leads"} href="/agent/leads">
               Lead Inbox
             </NavLink>
             <NavLink active={pathname === "/properties"} href="/properties">
@@ -113,7 +147,25 @@ export function RoleNavigation() {
               Favorites
             </NavLink>
             <NavLink active={pathname === "/notifications"} href="/notifications">
-              Notifications
+              <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+                Notifications
+                {unreadCount > 0 && (
+                  <span
+                    style={{
+                      marginLeft: "6px",
+                      backgroundColor: "#ef4444",
+                      color: "#ffffff",
+                      fontSize: "11px",
+                      fontWeight: "700",
+                      borderRadius: "10px",
+                      padding: "2px 6px",
+                      lineHeight: "1",
+                    }}
+                  >
+                    {unreadCount}
+                  </span>
+                )}
+              </span>
             </NavLink>
             {!role ? (
               <NavLink active={pathname === "/auth/login"} href="/auth/login">
@@ -124,6 +176,14 @@ export function RoleNavigation() {
         )}
         <AccountMenu name={name} onLogout={logout} role={role} />
       </div>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          duration={5000}
+          onClose={() => setToast(null)}
+        />
+      )}
     </nav>
   );
 }

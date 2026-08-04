@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { RoleNavigation } from "../../components/role-navigation";
 import { apiDelete, apiGet, apiPost } from "../../lib/api";
 import { formatMoney, formatStatus, Property } from "../types";
+import { Toast } from "../../components/toast";
 
 type AuthRole = "ADMIN" | "CUSTOMER" | "SALES_AGENT" | null;
 type FavoritesResponse = { data: Array<{ propertyId: number }> };
@@ -22,6 +23,9 @@ export default function PropertyDetailPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isCheckingEditAccess, setIsCheckingEditAccess] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRequesting, setIsRequesting] = useState(false);
+  const [requestSuccess, setRequestSuccess] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     apiGet<Property>(`/properties/${params.id}`)
@@ -37,6 +41,46 @@ export default function PropertyDetailPage() {
         .catch(() => undefined);
     }
   }, [params.id]);
+
+  async function requestConsultation() {
+    const token = localStorage.getItem("selapAccessToken");
+    if (!token || !property) {
+      router.push("/auth/login");
+      return;
+    }
+
+    setIsRequesting(true);
+    setError("");
+
+    try {
+      await apiPost("/leads", {
+        token,
+        body: {
+          propertyId: property.id,
+          note: "Customer requested consultation from detail page.",
+        },
+      });
+
+      setRequestSuccess(true);
+
+      // Gọi Toast thông báo thành công
+      setToast({
+        message: "Consultation request sent! A Sales Agent will contact you soon.",
+        type: "success",
+      });
+    } catch (caughtError) {
+      // Gọi Toast thông báo thất bại
+      setToast({
+        message:
+          caughtError instanceof Error
+            ? caughtError.message
+            : "Unable to send consultation request.",
+        type: "error",
+      });
+    } finally {
+      setIsRequesting(false);
+    }
+  }
 
   async function toggleSave() {
     if (isSaving) return;
@@ -153,13 +197,20 @@ export default function PropertyDetailPage() {
                 </div>
               ) : (
                 <div className="detailActions">
-                  <button className="detailEditButton" type="button">Request consultation</button>
+                  <button className="detailEditButton" disabled={isRequesting || requestSuccess} onClick={requestConsultation} type="button" style={{backgroundColor: requestSuccess ? "#94a3b8" : undefined, borderColor: requestSuccess ? "#94a3b8" : undefined, color: requestSuccess ? "#ffffff" : undefined, cursor: requestSuccess ? "not-allowed" : "pointer",}}> {isRequesting ? "Sending..." : requestSuccess ? "Request Pending" : "Request consultation"} </button>
                   <button className="detailSaveButton" disabled={isSaving} onClick={toggleSave} type="button">{isSaving ? "Saving..." : isSaved ? "Move To Favorites" : "Save to Favorites"}</button>
                 </div>
               )}
             </aside>
           </section>
         ) : null}
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
       </div>
     </main>
   );

@@ -162,6 +162,7 @@ function EmptyNotifications({ filter }: { filter: "all" | "unread" }) {
 function iconFor(type: string) {
   if (type === "PROPERTY_STATUS_CHANGED") return "⌂";
   if (type === "PROPERTY_FAVORITE_CHANGED") return "♥";
+  if (type === "LEAD_ACCEPTED" || type.includes("LEAD")) return "🗩";
   if (type.includes("ACCOUNT")) return "✓";
   return "•";
 }
