@@ -16,6 +16,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { existsSync, mkdirSync } from 'fs';
 import { extname, join } from 'path';
 import { randomUUID } from 'crypto';
+import { diskStorage } from 'multer';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import type { AuthenticatedUser } from '../auth/authenticated-user';
@@ -23,8 +24,6 @@ import { CreatePropertyDto } from './dto/create-property.dto';
 import { PropertyFilterDto } from './dto/property-filter.dto';
 import { UpdatePropertyDto } from './dto/update-property.dto';
 import { PropertiesService } from './properties.service';
-
-const { diskStorage } = require('multer');
 
 const uploadDir = join(process.cwd(), 'uploads', 'properties');
 

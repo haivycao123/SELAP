@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import type { AuthenticatedUser } from '../auth/authenticated-user';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -14,7 +18,11 @@ export class NotificationsService {
     });
     return {
       data: notifications,
-      meta: { unreadCount: notifications.filter((notification) => !notification.readAt).length },
+      meta: {
+        unreadCount: notifications.filter(
+          (notification) => !notification.readAt,
+        ).length,
+      },
     };
   }
 
@@ -41,13 +49,18 @@ export class NotificationsService {
       where: { userId: user.id, readAt: null },
       data: { readAt: new Date() },
     });
-    return { message: 'All notifications marked as read.', updatedCount: result.count };
+    return {
+      message: 'All notifications marked as read.',
+      updatedCount: result.count,
+    };
   }
 
   private parseId(value: string): number {
     const id = Number(value);
     if (!Number.isInteger(id) || id <= 0) {
-      throw new BadRequestException('Notification id must be a positive integer.');
+      throw new BadRequestException(
+        'Notification id must be a positive integer.',
+      );
     }
     return id;
   }

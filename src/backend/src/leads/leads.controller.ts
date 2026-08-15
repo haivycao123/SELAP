@@ -45,7 +45,7 @@ export class LeadsController {
   ) {
     return this.leadsService.claimLead(user.id, leadId);
   }
-  
+
   @Patch(':id/status')
   updateLeadStatus(
     @CurrentUser() user: AuthenticatedUser,

@@ -32,9 +32,7 @@ export class ClaimingGateway
 
   async handleConnection(client: Socket) {
     try {
-      const token =
-        client.handshake.auth?.token ||
-        client.handshake.headers?.authorization?.replace('Bearer ', '');
+      const token = this.getHandshakeToken(client);
 
       if (!token) {
         client.disconnect();
@@ -42,9 +40,8 @@ export class ClaimingGateway
       }
 
       const payload = this.tokenService.verifyAccessToken(token);
-      client.data.user = payload;
 
-      client.join(`user_${payload.sub}`);
+      await client.join(`user_${payload.sub}`);
 
       if (payload.role === 'SALES_AGENT') {
         const agentProfile = await this.prisma.agentProfile.findUnique({
@@ -55,15 +52,16 @@ export class ClaimingGateway
         if (agentProfile && agentProfile.regions.length > 0) {
           agentProfile.regions.forEach((r) => {
             const roomName = `region_${r.regionId}`;
-            client.join(roomName);
+            void client.join(roomName);
             this.logger.log(`Agent ${payload.sub} joined room: ${roomName}`);
           });
         }
       }
 
       this.logger.log(`User ${payload.sub} connected on socket ${client.id}`);
-    } catch (error: any) {
-      this.logger.error(`Socket auth failed: ${error?.message}`);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Socket auth failed: ${message}`);
       client.disconnect();
     }
   }
@@ -73,12 +71,12 @@ export class ClaimingGateway
   }
 
   @SubscribeMessage('joinRegionRoom')
-  handleJoinRegion(
+  async handleJoinRegion(
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { regionId: number },
   ) {
     const roomName = `region_${data.regionId}`;
-    client.join(roomName);
+    await client.join(roomName);
     return { event: 'joinedRoom', data: { room: roomName } };
   }
 
@@ -87,7 +85,10 @@ export class ClaimingGateway
     this.server.to(roomName).emit('new_lead', leadData);
   }
 
-  broadcastLeadClaimed(regionId: number, data: { leadId: number; claimedByAgentId: number }) {
+  broadcastLeadClaimed(
+    regionId: number,
+    data: { leadId: number; claimedByAgentId: number },
+  ) {
     const roomName = `region_${regionId}`;
     this.server.to(roomName).emit('lead_claimed', data);
   }
@@ -95,5 +96,21 @@ export class ClaimingGateway
   notifyCustomerLeadAccepted(customerId: number, data: any) {
     const roomName = `user_${customerId}`;
     this.server.to(roomName).emit('lead_accepted', data);
+  }
+
+  private getHandshakeToken(client: Socket): string | undefined {
+    const auth = client.handshake.auth as { token?: unknown } | undefined;
+    const authToken = auth?.token;
+
+    if (typeof authToken === 'string') {
+      return authToken;
+    }
+
+    const authorization = client.handshake.headers.authorization;
+    if (typeof authorization === 'string') {
+      return authorization.replace('Bearer ', '');
+    }
+
+    return undefined;
   }
 }

@@ -6,7 +6,6 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import {
-  Prisma,
   AccountStatus,
   LeadStatus,
   LeadSource,
@@ -84,7 +83,11 @@ export class LeadsService {
       include: { agentProfile: { include: { regions: true } } },
     });
 
-    if (!agentUser || agentUser.status !== AccountStatus.ACTIVE || !agentUser.agentProfile) {
+    if (
+      !agentUser ||
+      agentUser.status !== AccountStatus.ACTIVE ||
+      !agentUser.agentProfile
+    ) {
       throw new ForbiddenException('Only active Sales Agents can claim leads.');
     }
 
@@ -114,7 +117,9 @@ export class LeadsService {
             claimedAt: new Date(),
           },
           include: {
-            customer: { select: { id: true, name: true, phone: true, email: true } },
+            customer: {
+              select: { id: true, name: true, phone: true, email: true },
+            },
             property: true,
           },
         });
@@ -146,12 +151,15 @@ export class LeadsService {
         });
 
         // Phát WebSocket Real-time cho Customer
-        this.claimingGateway.notifyCustomerLeadAccepted(updatedLead.customerId, {
-          leadId: updatedLead.id,
-          agentName: agentUser.name,
-          propertyTitle: propertyTitle,
-          message: notificationMessage,
-        });
+        this.claimingGateway.notifyCustomerLeadAccepted(
+          updatedLead.customerId,
+          {
+            leadId: updatedLead.id,
+            agentName: agentUser.name,
+            propertyTitle: propertyTitle,
+            message: notificationMessage,
+          },
+        );
       }
 
       if (updatedLead.regionId) {
@@ -170,8 +178,10 @@ export class LeadsService {
         },
         lead: updatedLead,
       };
-    } catch (error) {
-      throw new ConflictException('This request was accepted by another Sales Agent.');
+    } catch {
+      throw new ConflictException(
+        'This request was accepted by another Sales Agent.',
+      );
     }
   }
 
@@ -181,7 +191,10 @@ export class LeadsService {
       include: { regions: true },
     });
 
-    if (!agentProfile) throw new ForbiddenException('Only Sales Agents can view available leads.');
+    if (!agentProfile)
+      throw new ForbiddenException(
+        'Only Sales Agents can view available leads.',
+      );
 
     const assignedRegionIds = agentProfile.regions.map((r) => r.regionId);
 
@@ -227,7 +240,9 @@ export class LeadsService {
 
     if (!lead) throw new NotFoundException('Lead not found.');
     if (lead.assignedAgentId !== agentUserId) {
-      throw new ForbiddenException('You can only update leads assigned to you.');
+      throw new ForbiddenException(
+        'You can only update leads assigned to you.',
+      );
     }
 
     return this.prisma.lead.update({

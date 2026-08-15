@@ -4,12 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import {
-  AccountStatus,
-  NotificationType,
-  Prisma,
-  Role,
-} from '@prisma/client';
+import { AccountStatus, NotificationType, Prisma, Role } from '@prisma/client';
 import type { AuthenticatedUser } from '../auth/authenticated-user';
 import { PrismaService } from '../prisma/prisma.service';
 import { ApproveAgentDto } from './dto/approve-agent.dto';
@@ -56,10 +51,30 @@ const staffInclude = {
 } satisfies Prisma.UserInclude;
 
 const defaultRegions = [
-  { code: 'TAN_BINH', name: 'Tan Binh', city: 'Ho Chi Minh City', district: 'Tan Binh' },
-  { code: 'PHU_NHUAN', name: 'Phu Nhuan', city: 'Ho Chi Minh City', district: 'Phu Nhuan' },
-  { code: 'TAN_PHU', name: 'Tan Phu', city: 'Ho Chi Minh City', district: 'Tan Phu' },
-  { code: 'THU_DUC', name: 'Thu Duc', city: 'Ho Chi Minh City', district: 'Thu Duc' },
+  {
+    code: 'TAN_BINH',
+    name: 'Tan Binh',
+    city: 'Ho Chi Minh City',
+    district: 'Tan Binh',
+  },
+  {
+    code: 'PHU_NHUAN',
+    name: 'Phu Nhuan',
+    city: 'Ho Chi Minh City',
+    district: 'Phu Nhuan',
+  },
+  {
+    code: 'TAN_PHU',
+    name: 'Tan Phu',
+    city: 'Ho Chi Minh City',
+    district: 'Tan Phu',
+  },
+  {
+    code: 'THU_DUC',
+    name: 'Thu Duc',
+    city: 'Ho Chi Minh City',
+    district: 'Thu Duc',
+  },
 ];
 
 @Injectable()
@@ -122,7 +137,9 @@ export class AdminService {
     });
 
     if (regions.length !== regionIds.length) {
-      throw new BadRequestException('One or more selected regions do not exist.');
+      throw new BadRequestException(
+        'One or more selected regions do not exist.',
+      );
     }
 
     const updatedAgent = await this.prisma.$transaction(async (tx) => {
@@ -149,7 +166,8 @@ export class AdminService {
           senderId: admin.id,
           type: NotificationType.ACCOUNT_APPROVED,
           title: 'Account approved',
-          message: 'Your Sales Agent account has been approved and assigned to an area.',
+          message:
+            'Your Sales Agent account has been approved and assigned to an area.',
           data: { regionIds },
         },
       });
@@ -229,7 +247,9 @@ export class AdminService {
     }
 
     if (agent.status !== AccountStatus.PENDING) {
-      throw new BadRequestException('Only pending Sales Agent accounts can be reviewed.');
+      throw new BadRequestException(
+        'Only pending Sales Agent accounts can be reviewed.',
+      );
     }
 
     return agent;
@@ -318,7 +338,9 @@ export class AdminService {
 
   private parseRegionIds(value: unknown) {
     if (!Array.isArray(value) || value.length === 0) {
-      throw new BadRequestException('At least one area must be selected before approving.');
+      throw new BadRequestException(
+        'At least one area must be selected before approving.',
+      );
     }
 
     const ids = [...new Set(value.map((item) => Number(item)))];
@@ -342,7 +364,9 @@ export class AdminService {
     const reason = value.trim();
 
     if (reason.length > 500) {
-      throw new BadRequestException('Reject reason must be 500 characters or fewer.');
+      throw new BadRequestException(
+        'Reject reason must be 500 characters or fewer.',
+      );
     }
 
     return reason || null;
@@ -350,7 +374,9 @@ export class AdminService {
 
   private assertAdmin(user: AuthenticatedUser) {
     if (user.role !== Role.ADMIN) {
-      throw new ForbiddenException('Only Admin users can review Sales Agent accounts.');
+      throw new ForbiddenException(
+        'Only Admin users can review Sales Agent accounts.',
+      );
     }
   }
 

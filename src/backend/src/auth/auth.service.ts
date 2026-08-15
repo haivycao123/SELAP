@@ -124,7 +124,9 @@ export class AuthService {
     }
 
     if (user.role !== dto.role) {
-      throw new UnauthorizedException('Selected role does not match this account.');
+      throw new UnauthorizedException(
+        'Selected role does not match this account.',
+      );
     }
 
     if (!user.emailVerifiedAt) {

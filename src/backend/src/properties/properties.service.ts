@@ -76,10 +76,7 @@ export class PropertiesService {
     return this.toPagedResponse(items, total, pagination);
   }
 
-  async findForManagement(
-    filters: PropertyFilterDto,
-    user: AuthenticatedUser,
-  ) {
+  async findForManagement(filters: PropertyFilterDto, user: AuthenticatedUser) {
     this.assertCanManageProperties(user);
 
     const pagination = this.parsePagination(filters);
@@ -223,18 +220,17 @@ export class PropertiesService {
     const property = await this.findManageableProperty(id, user);
     const data = this.toUpdateData(dto);
     const requestedRegionId = data.regionId ?? null;
-    const regionIdWasProvided = Object.prototype.hasOwnProperty.call(
-      data,
-      'regionId',
-    );
-    const newStatus = data.status as PropertyStatus | undefined;
-    const { regionId: _regionId, ...propertyData } = data;
+    const regionIdWasProvided = 'regionId' in data;
+    const newStatus = data.status;
+    const { regionId: omittedRegionId, ...propertyData } = data;
+    void omittedRegionId;
 
     if (regionIdWasProvided) {
       await this.assertCanAccessRegion(user, requestedRegionId);
     }
 
-    const hasStatusChange = newStatus !== undefined && newStatus !== property.status;
+    const hasStatusChange =
+      newStatus !== undefined && newStatus !== property.status;
 
     const updatedProperty = await this.prisma.$transaction(async (tx) => {
       const updated = await tx.property.update({
@@ -422,7 +418,11 @@ export class PropertiesService {
     };
   }
 
-  private toPagedResponse<T>(items: T[], total: number, pagination: Pagination) {
+  private toPagedResponse<T>(
+    items: T[],
+    total: number,
+    pagination: Pagination,
+  ) {
     return {
       data: items,
       meta: {
@@ -443,7 +443,11 @@ export class PropertiesService {
     this.validateRequiredText(dto.city, 'City');
     this.validateRequiredText(dto.district, 'District');
 
-    const type = this.parseEnum(dto.type, allowedPropertyTypes, 'Property type');
+    const type = this.parseEnum(
+      dto.type,
+      allowedPropertyTypes,
+      'Property type',
+    );
     const status = dto.status
       ? this.parseEnum(dto.status, allowedPropertyStatuses, 'Property status')
       : PropertyStatus.AVAILABLE;
@@ -482,9 +486,10 @@ export class PropertiesService {
     };
   }
 
-  private toUpdateData(
-    dto: UpdatePropertyDto,
-  ): Prisma.PropertyUpdateInput & { status?: PropertyStatus; regionId?: number } {
+  private toUpdateData(dto: UpdatePropertyDto): Prisma.PropertyUpdateInput & {
+    status?: PropertyStatus;
+    regionId?: number;
+  } {
     const data: Prisma.PropertyUpdateInput & {
       status?: PropertyStatus;
       regionId?: number;
@@ -498,7 +503,11 @@ export class PropertiesService {
       data.description = this.trimNullable(dto.description);
     }
     if (dto.type !== undefined) {
-      data.type = this.parseEnum(dto.type, allowedPropertyTypes, 'Property type');
+      data.type = this.parseEnum(
+        dto.type,
+        allowedPropertyTypes,
+        'Property type',
+      );
     }
     if (dto.status !== undefined) {
       data.status = this.parseEnum(
@@ -538,14 +547,19 @@ export class PropertiesService {
       data.bedroom = this.parseOptionalNonNegativeInt(dto.bedroom, 'Bedroom');
     }
     if (dto.bathroom !== undefined) {
-      data.bathroom = this.parseOptionalNonNegativeInt(dto.bathroom, 'Bathroom');
+      data.bathroom = this.parseOptionalNonNegativeInt(
+        dto.bathroom,
+        'Bathroom',
+      );
     }
     if (dto.floor !== undefined) {
       data.floor = this.parseOptionalNonNegativeInt(dto.floor, 'Floor');
     }
     if (dto.regionId !== undefined) {
       const regionId = this.parseOptionalId(dto.regionId, 'Region id');
-      data.region = regionId ? { connect: { id: regionId } } : { disconnect: true };
+      data.region = regionId
+        ? { connect: { id: regionId } }
+        : { disconnect: true };
       data.regionId = regionId;
     }
 
@@ -568,8 +582,10 @@ export class PropertiesService {
         url: image.url.trim(),
         alt: this.trimOptional(image.alt),
         sortOrder:
-          this.parseOptionalNonNegativeInt(image.sortOrder, 'Image sortOrder') ??
-          index,
+          this.parseOptionalNonNegativeInt(
+            image.sortOrder,
+            'Image sortOrder',
+          ) ?? index,
       };
     });
   }
@@ -598,7 +614,9 @@ export class PropertiesService {
     }
 
     if (user.role !== Role.SALES_AGENT) {
-      throw new ForbiddenException('Only admins and sales agents can manage properties.');
+      throw new ForbiddenException(
+        'Only admins and sales agents can manage properties.',
+      );
     }
 
     const regionIds = await this.getAgentRegionIds(user.id);
@@ -614,7 +632,9 @@ export class PropertiesService {
 
   private assertCanManageProperties(user: AuthenticatedUser): void {
     if (user.role !== Role.ADMIN && user.role !== Role.SALES_AGENT) {
-      throw new ForbiddenException('Only admins and sales agents can manage properties.');
+      throw new ForbiddenException(
+        'Only admins and sales agents can manage properties.',
+      );
     }
   }
 
@@ -651,7 +671,9 @@ export class PropertiesService {
     }
 
     if (user.role !== Role.SALES_AGENT) {
-      throw new ForbiddenException('Only admins and sales agents can manage properties.');
+      throw new ForbiddenException(
+        'Only admins and sales agents can manage properties.',
+      );
     }
 
     if (!regionId) {
@@ -704,7 +726,9 @@ export class PropertiesService {
 
     if (gte !== undefined || lte !== undefined) {
       if (gte !== undefined && lte !== undefined && Number(gte) > Number(lte)) {
-        throw new BadRequestException(`Minimum ${field} cannot exceed maximum ${field}.`);
+        throw new BadRequestException(
+          `Minimum ${field} cannot exceed maximum ${field}.`,
+        );
       }
 
       and.push({ [field]: { gte, lte } });
@@ -722,7 +746,9 @@ export class PropertiesService {
 
     if (gte !== undefined || lte !== undefined) {
       if (gte !== undefined && lte !== undefined && gte > lte) {
-        throw new BadRequestException(`Minimum ${field} cannot exceed maximum ${field}.`);
+        throw new BadRequestException(
+          `Minimum ${field} cannot exceed maximum ${field}.`,
+        );
       }
 
       and.push({ [field]: { gte, lte } });
