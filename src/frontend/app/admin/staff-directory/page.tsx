@@ -120,13 +120,14 @@ export default function StaffDirectoryPage() {
 
   return (
     <main className="catalogMockPage staffDirectoryPage">
-      <div className="catalogMockShell">
+      <div className="catalogMockShell notificationShell">
         <RoleNavigation />
 
-        <header className="staffHeader">
+        <header className="notificationHeader">
           <div>
-            <p className="eyebrow">Admin</p>
+            <p className="pageEyebrow">ADMIN DASHBOARD</p>
             <h1>Staff Directory</h1>
+            <p>Manage all sales agents and administrators across regions.</p>
           </div>
           <div className="staffSummary">
             <SummaryStat label="Admins" value={totals.admins} />

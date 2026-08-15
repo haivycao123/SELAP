@@ -298,8 +298,15 @@ button {
 }
 
 .catalogMockShell {
-  margin: 0;
   width: 100%;
+  padding-left: 32px;
+  padding-right: 32px;
+  box-sizing: border-box;
+}
+
+.catalogMockShell > :not(.catalogMockNav) {
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .catalogMockNav {
@@ -309,6 +316,10 @@ button {
   height: 76px;
   justify-content: space-between;
   padding: 0 40px;
+  margin-left: -32px;
+  margin-right: -32px;
+  width: calc(100% + 64px);
+  box-sizing: border-box;
 }
 
 .catalogMockBrand {
@@ -709,7 +720,7 @@ button {
 
 .approvalMockPage {
   border: 0;
-  padding-top: 36px;
+  padding-top: 0;
 }
 
 .approvalNav {
@@ -917,7 +928,7 @@ button {
 
 .staffDirectoryPage {
   border: 0;
-  padding-top: 36px;
+  padding-top: 0;
 }
 
 .staffHeader {

@@ -55,9 +55,9 @@ export default function SavedPropertiesPage() {
 
   return (
     <main className="catalogMockPage savedPage">
-      <div className="catalogMockShell">
+      <div className="catalogMockShell notificationShell">
         <RoleNavigation />
-        <header className="savedHeader">
+        <header className="notificationHeader">
           <div>
             <p className="pageEyebrow">YOUR WISHLIST</p>
             <h1>Saved properties</h1>

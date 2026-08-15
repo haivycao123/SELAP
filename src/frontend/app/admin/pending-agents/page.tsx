@@ -169,14 +169,15 @@ export default function PendingAgentsPage() {
 
   return (
     <main className="catalogMockPage approvalMockPage">
-      <div className="catalogMockShell">
+      <div className="catalogMockShell notificationShell">
         <RoleNavigation />
 
-        <header className="approvalHeader">
-          <h1>Admin Account Approval Dashboard</h1>
-          <p>
-            Admin must assign an area before approving a pending Sales Agent.
-          </p>
+        <header className="notificationHeader">
+          <div>
+            <p className="pageEyebrow">ADMIN DASHBOARD</p>
+            <h1>Pending Agents</h1>
+            <p>Admin must assign an area before approving a pending Sales Agent.</p>
+          </div>
         </header>
 
         {notice ? <p className="approvalNotice">{notice}</p> : null}
