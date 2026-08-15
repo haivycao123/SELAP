@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { io, Socket } from "socket.io-client";
 import { apiGet, apiPost, apiPatch } from "../../lib/api";
@@ -50,6 +50,10 @@ function formatTimeAgo(dateString: string) {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
 export default function AgentLeadsPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"available" | "assigned">("available");
@@ -68,6 +72,23 @@ export default function AgentLeadsPage() {
     message: string;
     type: "success" | "error" | "info" | "warning";
   } | null>(null);
+
+  const loadLeads = useCallback(async (token: string) => {
+    setLoading(true);
+    try {
+      if (activeTab === "available") {
+        const data = await apiGet<LeadItem[]>("/leads/available", { token });
+        setAvailableLeads(data);
+      } else {
+        const data = await apiGet<LeadItem[]>("/leads/assigned", { token });
+        setAssignedLeads(data);
+      }
+    } catch (err) {
+      console.error("Failed to load leads:", err);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     const token = localStorage.getItem("selapAccessToken");
@@ -121,24 +142,7 @@ export default function AgentLeadsPage() {
     return () => {
       socket.disconnect();
     };
-  }, [router, activeTab]);
-
-  const loadLeads = async (token: string) => {
-    setLoading(true);
-    try {
-      if (activeTab === "available") {
-        const data = await apiGet<LeadItem[]>("/leads/available", { token });
-        setAvailableLeads(data);
-      } else {
-        const data = await apiGet<LeadItem[]>("/leads/assigned", { token });
-        setAssignedLeads(data);
-      }
-    } catch (err) {
-      console.error("Failed to load leads:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [router, activeTab, loadLeads]);
 
   const handleClaimLead = async (leadId: number) => {
     const token = localStorage.getItem("selapAccessToken");
@@ -176,8 +180,10 @@ export default function AgentLeadsPage() {
         type: "success",
       });
 
-    } catch (err: any) {
-      setErrorMessage(err.message || "This request was accepted by another Sales Agent.");
+    } catch (err: unknown) {
+      setErrorMessage(
+        getErrorMessage(err, "This request was accepted by another Sales Agent.")
+      );
       setAvailableLeads((prev) =>
         prev.map((item) => (item.id === leadId ? { ...item, status: "CLAIMED" } : item))
       );
@@ -193,8 +199,11 @@ export default function AgentLeadsPage() {
       setAssignedLeads((prev) =>
         prev.map((item) => (item.id === leadId ? { ...item, status: updated.status } : item))
       );
-    } catch (err: any) {
-      alert("Failed to update status: " + err.message);
+    } catch (err: unknown) {
+      alert(
+        "Failed to update status: " +
+          getErrorMessage(err, "Please try again.")
+      );
     }
   };
 

@@ -292,15 +292,14 @@ button {
 
 .catalogMockPage {
   background: #ffffff;
-  border: 5px solid #23a7f2;
   color: #17252c;
   min-height: 100vh;
-  padding: 36px 92px 120px;
+  padding: 0 0 96px;
 }
 
 .catalogMockShell {
-  margin: 0 auto;
-  max-width: 2300px;
+  margin: 0;
+  width: 100%;
 }
 
 .catalogMockNav {
@@ -441,7 +440,7 @@ button {
   display: grid;
   gap: 32px;
   grid-template-columns: 1.9fr 1.02fr 1.45fr 1.02fr 0.78fr;
-  margin: 42px 52px 0;
+  margin: 34px 0 0;
   padding: 22px 40px;
 }
 
@@ -535,7 +534,7 @@ button {
   display: grid;
   gap: 44px;
   grid-template-columns: repeat(3, minmax(300px, 1fr));
-  margin: 58px 52px 0;
+  margin: 44px 0 0;
 }
 
 .mockPropertyCard {
@@ -684,7 +683,7 @@ button {
 .mockError {
   border-color: #cf3f3f;
   color: #b52a2a;
-  margin: 26px 52px 0;
+  margin: 26px 0 0;
 }
 
 .mockSkeleton {
@@ -727,7 +726,7 @@ button {
 }
 
 .approvalHeader {
-  margin: 42px 52px 0;
+  margin: 42px 0 0;
 }
 
 .approvalHeader h1 {
@@ -749,7 +748,7 @@ button {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.4;
-  margin: 18px 52px 0;
+  margin: 18px 0 0;
   padding: 10px 18px;
 }
 
@@ -770,7 +769,7 @@ button {
   background: #ffffff;
   border: 1.25px solid #d8e4e8;
   box-shadow: 0 8px 22px rgba(29, 100, 123, 0.12);
-  margin: 36px 52px 0;
+  margin: 36px 0 0;
   min-height: 440px;
   overflow: hidden;
 }
@@ -926,7 +925,7 @@ button {
   display: flex;
   gap: 24px;
   justify-content: space-between;
-  margin: 42px 52px 0;
+  margin: 42px 0 0;
 }
 
 .staffHeader h1 {
@@ -974,7 +973,7 @@ button {
   display: grid;
   gap: 18px;
   grid-template-columns: 1.6fr minmax(190px, 0.5fr) minmax(190px, 0.5fr);
-  margin: 30px 52px 0;
+  margin: 30px 0 0;
   padding: 18px;
 }
 
@@ -1011,7 +1010,7 @@ button {
   background: #ffffff;
   border: 1.25px solid #d8e4e8;
   box-shadow: 0 8px 22px rgba(29, 100, 123, 0.12);
-  margin: 24px 52px 0;
+  margin: 24px 0 0;
   min-height: 360px;
   overflow: hidden;
 }
@@ -2180,7 +2179,7 @@ button {
   border-bottom: 1px solid #d8e4e8;
   display: flex;
   justify-content: space-between;
-  margin: 48px 52px 0;
+  margin: 44px 0 0;
   padding: 0 0 28px;
 }
 
@@ -2221,7 +2220,7 @@ button {
   display: grid;
   gap: 28px;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  margin: 34px 52px 0;
+  margin: 34px 0 0;
 }
 
 .savedCard {
@@ -2298,20 +2297,20 @@ button {
 .savedEmpty p,
 .notificationEmpty p { font-size: 14px; margin: 0; }
 .savedBrowseButton { background: #328ba8; color: #ffffff; font-size: 13px; font-weight: 800; margin-top: 22px; padding: 12px 20px; }
-.savedError { background: #fce8e8; border: 1px solid #cf3f3f; color: #b52a2a; font-size: 13px; font-weight: 700; margin: 22px 52px 0; padding: 12px 16px; }
+.savedError { background: #fce8e8; border: 1px solid #cf3f3f; color: #b52a2a; font-size: 13px; font-weight: 700; margin: 22px 0 0; padding: 12px 16px; }
 .savedSkeleton { background: linear-gradient(90deg, #f3f7f8, #e6eef1, #f3f7f8); border: 0; }
 
-.notificationShell { max-width: 1760px; }
+.notificationShell { max-width: none; }
 .notificationHeader { margin-bottom: 22px; }
 .markAllButton { background: #328ba8; border: 0; color: #ffffff; font-size: 13px; font-weight: 800; min-height: 42px; padding: 0 18px; }
 .markAllButton:disabled { background: #d9e6e9; color: #829199; cursor: not-allowed; }
-.notificationToolbar { align-items: center; display: flex; justify-content: space-between; margin: 0 52px; }
+.notificationToolbar { align-items: center; display: flex; justify-content: space-between; margin: 0; }
 .notificationTabs { display: flex; gap: 6px; }
 .notificationTab { background: transparent; border: 0; color: #667780; font-size: 13px; font-weight: 800; padding: 10px 14px; }
 .notificationTab.active { background: #e8f5f8; color: #1d647b; }
 .notificationTab span { background: #328ba8; border-radius: 999px; color: #ffffff; font-size: 10px; margin-left: 5px; padding: 2px 6px; }
 .notificationCount { color: #829199; font-size: 12px; font-weight: 700; }
-.notificationList { display: grid; gap: 10px; margin: 16px 52px 0; }
+.notificationList { display: grid; gap: 10px; margin: 16px 0 0; }
 .notificationItem { align-items: flex-start; background: #ffffff; border: 1px solid #d8e4e8; display: flex; gap: 16px; min-height: 96px; padding: 18px 20px; }
 .notificationItem.unread { background: #f4fbfd; border-color: #a7d5e2; }
 .clickableNotification { cursor: pointer; }
@@ -2352,13 +2351,13 @@ button {
 .accountRole { color: #667780; font-size: 11px; font-weight: 800; text-transform: uppercase; }
 .accountDropdown button { background: #ffffff; border: 1px solid #d8e4e8; color: #1d647b; font-size: 12px; font-weight: 800; margin-top: 9px; padding: 9px 10px; text-align: left; }
 
-.mockFilterBar { background: #fbfdfe; border: 1px solid #d9e6e9; box-shadow: 0 5px 14px rgba(29, 100, 123, 0.05); gap: 18px; grid-template-columns: 1.65fr 0.9fr 1.25fr 0.88fr 0.7fr; padding: 18px 22px; }
+.mockFilterBar { background: #fbfdfe; border: 1px solid #d9e6e9; box-shadow: 0 5px 14px rgba(29, 100, 123, 0.05); gap: 18px; grid-template-columns: minmax(260px, 1.65fr) minmax(180px, 0.9fr) minmax(230px, 1.25fr) minmax(170px, 0.88fr) minmax(140px, 0.7fr); padding: 18px 22px; }
 .mockFilterBar input, .mockFilterBar select { text-align: left; }
 .mockFilterBar input::placeholder { text-align: left; }
 .mockFilterBar select { text-align-last: left; }
 .mockPriceField input { text-align: center; }
 .mockFilterBar button { box-shadow: 0 3px 7px rgba(29, 100, 123, 0.18); }
-.mockPropertyGrid { gap: 28px; grid-template-columns: repeat(4, minmax(230px, 1fr)); }
+.mockPropertyGrid { gap: 28px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .mockPropertyCard { transition: box-shadow 0.18s ease, transform 0.18s ease; }
 .mockPropertyCard:hover { box-shadow: 0 12px 26px rgba(29, 100, 123, 0.13); transform: translateY(-3px); }
 .propertyCardLink { color: inherit; display: block; }
@@ -2366,9 +2365,9 @@ button {
 
 /* Property detail */
 .detailPage { padding-bottom: 90px; }
-.detailBack { color: #328ba8; display: inline-block; font-size: 13px; font-weight: 800; margin: 32px 52px 20px; }
-.detailLoading { color: #667780; font-size: 14px; font-weight: 700; margin: 40px 52px; }
-.detailLayout { display: grid; gap: 34px; grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr); margin: 0 52px; }
+.detailBack { color: #328ba8; display: inline-block; font-size: 13px; font-weight: 800; margin: 32px 0 20px; }
+.detailLoading { color: #667780; font-size: 14px; font-weight: 700; margin: 40px 0; }
+.detailLayout { display: grid; gap: 34px; grid-template-columns: minmax(0, 1.08fr) minmax(380px, 0.92fr); margin: 0; }
 .detailGallery, .detailSummary { background: #ffffff; border: 1px solid #d8e4e8; }
 .detailGallery { padding: 24px; }
 .detailMainImage { background: linear-gradient(135deg, #d3edf2, #3d9bb2); height: 420px; overflow: hidden; position: relative; }
