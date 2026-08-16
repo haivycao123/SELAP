@@ -168,8 +168,8 @@ export class PropertiesService {
 
     const where =
       user.role === Role.SALES_AGENT
-        ? { id: { in: await this.getAgentRegionIds(user.id) } }
-        : {};
+        ? { id: { in: await this.getAgentRegionIds(user.id) }, ward: null }
+        : { ward: null };
 
     const regions = await this.prisma.region.findMany({
       where,
@@ -181,6 +181,7 @@ export class PropertiesService {
 
   async findPublicRegionOptions() {
     const regions = await this.prisma.region.findMany({
+      where: { ward: null },
       orderBy: [{ city: 'asc' }, { district: 'asc' }, { name: 'asc' }],
     });
 

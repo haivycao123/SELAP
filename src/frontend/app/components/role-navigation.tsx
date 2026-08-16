@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
-import { apiGet } from "../lib/api";
+import { apiGet, getApiBaseUrl } from "../lib/api";
 import { Toast } from "./toast";
 
 type AuthRole = "ADMIN" | "CUSTOMER" | "SALES_AGENT" | null;
@@ -22,6 +22,9 @@ type CurrentUserResponse = {
     }>;
   };
 };
+
+const CURRENT_USER_CACHE_KEY = "selapCurrentUser";
+const CURRENT_USER_CACHE_TTL_MS = 60 * 1000;
 
 export function RoleNavigation() {
   const pathname = usePathname();
@@ -41,21 +44,15 @@ export function RoleNavigation() {
       return;
     }
 
+    const cachedUser = getCachedCurrentUser(token);
+    if (cachedUser) {
+      applyCurrentUser(cachedUser, tokenRole);
+    }
+
     apiGet<CurrentUserResponse>("/auth/me", { token })
       .then((data) => {
-        setRole(data.user.role ?? tokenRole);
-        setName(data.user.name ?? "");
-
-        if (data.user.role !== "SALES_AGENT") {
-          return;
-        }
-
-        const regions = data.user.regions ?? [];
-        setAgentAreaLabel(
-          regions.length > 0
-            ? `Area: ${regions.map((region) => region.name).join(", ")}`
-            : "Area: Not assigned"
-        );
+        cacheCurrentUser(token, data);
+        applyCurrentUser(data, tokenRole);
       })
       .catch(() => {
         setRole(tokenRole);
@@ -63,7 +60,7 @@ export function RoleNavigation() {
 
     // Lắng nghe Real-time Socket cho Customer
     if (tokenRole === "CUSTOMER" && token) {
-      const socket: Socket = io("http://localhost:3001/claiming", {
+      const socket: Socket = io(`${getApiBaseUrl() || "http://localhost:3001"}/claiming`, {
         auth: { token },
         transports: ["websocket", "polling"],
       });
@@ -92,8 +89,25 @@ export function RoleNavigation() {
 
   }, []);
 
+  function applyCurrentUser(data: CurrentUserResponse, fallbackRole: AuthRole) {
+    setRole(data.user.role ?? fallbackRole);
+    setName(data.user.name ?? "");
+
+    if (data.user.role !== "SALES_AGENT") {
+      return;
+    }
+
+    const regions = data.user.regions ?? [];
+    setAgentAreaLabel(
+      regions.length > 0
+        ? `Area: ${regions.map((region) => region.name).join(", ")}`
+        : "Area: Not assigned"
+    );
+  }
+
   function logout() {
     localStorage.removeItem("selapAccessToken");
+    sessionStorage.removeItem(CURRENT_USER_CACHE_KEY);
     router.push("/auth/login");
   }
 
@@ -270,4 +284,38 @@ function getRoleFromToken(token: string | null): AuthRole {
   } catch {
     return null;
   }
+}
+
+function getCachedCurrentUser(token: string): CurrentUserResponse | null {
+  try {
+    const raw = sessionStorage.getItem(CURRENT_USER_CACHE_KEY);
+    if (!raw) return null;
+
+    const cached = JSON.parse(raw) as {
+      expiresAt: number;
+      token: string;
+      value: CurrentUserResponse;
+    };
+
+    if (cached.token !== token || cached.expiresAt <= Date.now()) {
+      sessionStorage.removeItem(CURRENT_USER_CACHE_KEY);
+      return null;
+    }
+
+    return cached.value;
+  } catch {
+    sessionStorage.removeItem(CURRENT_USER_CACHE_KEY);
+    return null;
+  }
+}
+
+function cacheCurrentUser(token: string, value: CurrentUserResponse) {
+  sessionStorage.setItem(
+    CURRENT_USER_CACHE_KEY,
+    JSON.stringify({
+      expiresAt: Date.now() + CURRENT_USER_CACHE_TTL_MS,
+      token,
+      value
+    })
+  );
 }

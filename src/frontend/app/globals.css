@@ -537,6 +537,11 @@ button {
   margin: 44px 0 0;
 }
 
+.mockLoadMoreSentinel {
+  height: 1px;
+  width: 100%;
+}
+
 .mockPropertyCard {
   background: #ffffff;
   border: 1px solid #d8e4e8;

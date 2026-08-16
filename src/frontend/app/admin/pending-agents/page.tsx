@@ -44,13 +44,7 @@ export default function PendingAgentsPage() {
   const [token, setToken] = useState<string | null>(null);
 
   const regionOptions = useMemo(
-    () =>
-      regions.map((region) => ({
-        id: region.id,
-        label: [region.name, region.district, region.city]
-          .filter(Boolean)
-          .join(" - ")
-      })),
+    () => getRegionOptions(regions),
     [regions]
   );
 
@@ -265,4 +259,45 @@ export default function PendingAgentsPage() {
       </div>
     </main>
   );
+}
+
+function getRegionOptions(regions: Region[]) {
+  const options = new Map<string, { id: number; label: string }>();
+
+  regions.forEach((region) => {
+    const label = formatRegionLabel(region);
+    const key = normalizeRegionLabel(label);
+
+    if (!options.has(key)) {
+      options.set(key, { id: region.id, label });
+    }
+  });
+
+  return Array.from(options.values()).sort((left, right) =>
+    left.label.localeCompare(right.label, "vi")
+  );
+}
+
+function formatRegionLabel(region: Region) {
+  const label = (region.district || region.name).trim();
+
+  if (/^Quận\s+\d+$/i.test(label)) {
+    return label;
+  }
+
+  return label
+    .replace(/^(Quận|Huyện|TP|Thành phố|Thị xã)\s+/i, "")
+    .trim();
+}
+
+function normalizeRegionLabel(label: string) {
+  return label
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u0111/g, "d")
+    .replace(/\u0110/g, "D")
+    .toLowerCase()
+    .replace(/^(quan|huyen|tp|thanh pho|thi xa)\s+/, "")
+    .replace(/\s+/g, " ")
+    .trim();
 }

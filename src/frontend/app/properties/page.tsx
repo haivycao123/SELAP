@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { RoleNavigation } from "../components/role-navigation";
 import { apiDelete, apiGet, apiPost } from "../lib/api";
@@ -12,10 +12,10 @@ import {
 } from "./types";
 
 type CatalogFilters = {
+  area: string;
   q: string;
   maxPrice: string;
   minPrice: string;
-  regionId: string;
   type: string;
 };
 
@@ -36,6 +36,13 @@ type RegionOptionsResponse = {
   data: RegionOption[];
 };
 
+type DistrictOption = {
+  city: string;
+  district: string;
+  label: string;
+  value: string;
+};
+
 const catalogTypeOptions = [
   { label: "1 Bedroom", value: "ONE_BEDROOM" },
   { label: "2 Bedrooms", value: "TWO_BEDROOM" },
@@ -46,27 +53,32 @@ const catalogTypeOptions = [
 ];
 
 const initialFilters: CatalogFilters = {
+  area: "",
   q: "",
   maxPrice: "",
   minPrice: "",
-  regionId: "",
   type: ""
 };
+
+const PAGE_SIZE = 12;
 
 export default function PropertyCatalogPage() {
   const [filters, setFilters] = useState(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
-  const [response, setResponse] = useState<PropertyListResponse | null>(null);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [regions, setRegions] = useState<RegionOption[]>([]);
   const [savedPropertyIds, setSavedPropertyIds] = useState<number[]>([]);
   const [savingPropertyId, setSavingPropertyId] = useState<number | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  const query = useMemo(() => {
+  const queryBase = useMemo(() => {
     const params = new URLSearchParams({
-      limit: "12",
-      page: "1",
+      limit: String(PAGE_SIZE),
       sortBy: "createdAt",
       sortOrder: "desc"
     });
@@ -75,6 +87,12 @@ export default function PropertyCatalogPage() {
       if (value) {
         if (key === "minPrice" || key === "maxPrice") {
           params.set(key, String(Number(value.replace(",", ".")) * 1000000));
+        } else if (key === "area") {
+          const area = parseDistrictOptionValue(value);
+          if (area) {
+            params.set("city", area.city);
+            params.set("district", area.district);
+          }
         } else if (key !== "type") {
           params.set(key, value);
         }
@@ -87,13 +105,30 @@ export default function PropertyCatalogPage() {
 
   useEffect(() => {
     let isCurrent = true;
-    setIsLoading(true);
+    const isFirstPage = page === 1;
+
+    if (isFirstPage) {
+      setIsLoading(true);
+    } else {
+      setIsLoadingMore(true);
+    }
     setError("");
 
-    apiGet<PropertyListResponse>(`/properties?${query}`)
+    apiGet<PropertyListResponse>(`/properties?${queryBase}&page=${page}`)
       .then((data) => {
         if (isCurrent) {
-          setResponse(data);
+          const nextProperties = Array.isArray(data.data) ? data.data : [];
+          const nextTotalPages =
+            typeof data.meta?.totalPages === "number"
+              ? data.meta.totalPages
+              : page;
+
+          setTotalPages(nextTotalPages);
+          setProperties((current) =>
+            isFirstPage
+              ? nextProperties
+              : appendUniqueProperties(current, nextProperties)
+          );
         }
       })
       .catch((caughtError) => {
@@ -107,14 +142,45 @@ export default function PropertyCatalogPage() {
       })
       .finally(() => {
         if (isCurrent) {
-          setIsLoading(false);
+          if (isFirstPage) {
+            setIsLoading(false);
+          } else {
+            setIsLoadingMore(false);
+          }
         }
       });
 
     return () => {
       isCurrent = false;
     };
-  }, [query]);
+  }, [page, queryBase]);
+
+  useEffect(() => {
+    const target = loadMoreRef.current;
+    if (!target) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (
+          entry.isIntersecting &&
+          !isLoading &&
+          !isLoadingMore &&
+          page < totalPages
+        ) {
+          setPage((current) => current + 1);
+        }
+      },
+      { rootMargin: "520px 0px" }
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [isLoading, isLoadingMore, page, totalPages]);
 
   useEffect(() => {
     const token = localStorage.getItem("selapAccessToken");
@@ -141,6 +207,9 @@ export default function PropertyCatalogPage() {
 
   function applyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    setProperties([]);
+    setPage(1);
+    setTotalPages(1);
     setAppliedFilters(filters);
   }
 
@@ -170,7 +239,7 @@ export default function PropertyCatalogPage() {
     }
   }
 
-  const properties = response?.data ?? [];
+  const districtOptions = useMemo(() => getDistrictOptions(regions), [regions]);
 
   return (
     <main className="catalogMockPage">
@@ -186,13 +255,13 @@ export default function PropertyCatalogPage() {
           />
           <select
             aria-label="Area"
-            onChange={(event) => updateFilter("regionId", event.target.value)}
-            value={filters.regionId}
+            onChange={(event) => updateFilter("area", event.target.value)}
+            value={filters.area}
           >
             <option value="">Area</option>
-            {regions.map((region) => (
-              <option key={region.id} value={region.id}>
-                {formatRegionOption(region)}
+            {districtOptions.map((district) => (
+              <option key={district.value} value={district.value}>
+                {district.label}
               </option>
             ))}
           </select>
@@ -254,10 +323,31 @@ export default function PropertyCatalogPage() {
                 />
               ))
             : null}
+          {isLoadingMore
+            ? Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  className="mockPropertyCard mockSkeleton"
+                  key={`more-${index}`}
+                />
+              ))
+            : null}
         </section>
+        <div
+          aria-hidden="true"
+          className="mockLoadMoreSentinel"
+          ref={loadMoreRef}
+        />
       </div>
     </main>
   );
+}
+
+function appendUniqueProperties(current: Property[], next: Property[]) {
+  const currentIds = new Set(current.map((property) => property.id));
+  return [
+    ...current,
+    ...next.filter((property) => !currentIds.has(property.id))
+  ];
 }
 
 function PropertyCard({
@@ -342,8 +432,54 @@ function PropertyPhoto({
   );
 }
 
-function formatRegionOption(region: RegionOption) {
-  return [region.name, region.district, region.city].filter(Boolean).join(" - ");
+function getDistrictOptions(regions: RegionOption[]) {
+  const options = new Map<string, DistrictOption>();
+
+  regions.forEach((region) => {
+    const city = region.city?.trim();
+    const district = region.district?.trim();
+
+    if (!city || !district) {
+      return;
+    }
+
+    const value = formatDistrictOptionValue(city, district);
+    if (!options.has(value)) {
+      options.set(value, {
+        city,
+        district,
+        label: `${district} - ${city}`,
+        value
+      });
+    }
+  });
+
+  return Array.from(options.values()).sort((left, right) =>
+    left.label.localeCompare(right.label, "vi")
+  );
+}
+
+function formatDistrictOptionValue(city: string, district: string) {
+  return JSON.stringify({ city, district });
+}
+
+function parseDistrictOptionValue(value: string) {
+  try {
+    const parsed = JSON.parse(value) as Partial<
+      Pick<DistrictOption, "city" | "district">
+    >;
+
+    if (parsed.city && parsed.district) {
+      return {
+        city: parsed.city,
+        district: parsed.district
+      };
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
 }
 
 function applyTypeFilter(params: URLSearchParams, value: string) {

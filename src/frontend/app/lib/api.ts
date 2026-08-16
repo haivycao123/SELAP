@@ -1,12 +1,25 @@
 type ApiOptions = {
   body?: unknown;
+  timeoutMs?: number;
   token?: string | null;
 };
 
 type UploadOptions = {
   file: File;
+  timeoutMs?: number;
   token?: string | null;
 };
+
+const DEFAULT_TIMEOUT_MS = 15000;
+const PUBLIC_API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "");
+
+export function getApiBaseUrl() {
+  return PUBLIC_API_BASE_URL ?? "";
+}
+
+function toApiUrl(path: string) {
+  return `/api${path}`;
+}
 
 export async function apiPost<T>(path: string, options: ApiOptions = {}) {
   return apiRequest<T>(path, {
@@ -51,13 +64,17 @@ export async function apiUploadImage<T>(
     headers.Authorization = `Bearer ${options.token}`;
   }
 
-  const response = await fetch(`/api${path}`, {
-    body: formData,
-    headers,
-    method: "POST"
-  });
+  const response = await fetchWithTimeout(
+    toApiUrl(path),
+    {
+      body: formData,
+      headers,
+      method: "POST"
+    },
+    options.timeoutMs
+  );
 
-  const data = await response.json().catch(() => ({}));
+  const data = await parseJsonResponse(response);
 
   if (!response.ok) {
     const message =
@@ -83,16 +100,20 @@ async function apiRequest<T>(
     headers.Authorization = `Bearer ${options.token}`;
   }
 
-  const response = await fetch(`/api${path}`, {
-    body:
-      options.method === "GET" || options.method === "DELETE"
-        ? undefined
-        : JSON.stringify(options.body ?? {}),
-    headers,
-    method: options.method
-  });
+  const response = await fetchWithTimeout(
+    toApiUrl(path),
+    {
+      body:
+        options.method === "GET" || options.method === "DELETE"
+          ? undefined
+          : JSON.stringify(options.body ?? {}),
+      headers,
+      method: options.method
+    },
+    options.timeoutMs
+  );
 
-  const data = await response.json().catch(() => ({}));
+  const data = await parseJsonResponse(response);
 
   if (!response.ok) {
     const message =
@@ -104,6 +125,36 @@ async function apiRequest<T>(
   }
 
   return data as T;
+}
+
+async function fetchWithTimeout(
+  input: RequestInfo | URL,
+  init: RequestInit,
+  timeoutMs = DEFAULT_TIMEOUT_MS
+) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    return await fetch(input, {
+      ...init,
+      signal: controller.signal
+    });
+  } finally {
+    window.clearTimeout(timeout);
+  }
+}
+
+async function parseJsonResponse(response: Response) {
+  const contentType = response.headers.get("Content-Type") ?? "";
+
+  if (!contentType.toLowerCase().includes("application/json")) {
+    throw new Error("API returned an unexpected response. Please make sure the backend server is running.");
+  }
+
+  return response.json().catch(() => {
+    throw new Error("API returned invalid JSON. Please try again.");
+  });
 }
 
 export function getOtpCode(formData: FormData, namePrefix: string) {

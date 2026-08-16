@@ -50,42 +50,18 @@ const staffInclude = {
   },
 } satisfies Prisma.UserInclude;
 
-const defaultRegions = [
-  {
-    code: 'TAN_BINH',
-    name: 'Tan Binh',
-    city: 'Ho Chi Minh City',
-    district: 'Tan Binh',
-  },
-  {
-    code: 'PHU_NHUAN',
-    name: 'Phu Nhuan',
-    city: 'Ho Chi Minh City',
-    district: 'Phu Nhuan',
-  },
-  {
-    code: 'TAN_PHU',
-    name: 'Tan Phu',
-    city: 'Ho Chi Minh City',
-    district: 'Tan Phu',
-  },
-  {
-    code: 'THU_DUC',
-    name: 'Thu Duc',
-    city: 'Ho Chi Minh City',
-    district: 'Thu Duc',
-  },
-];
-
 @Injectable()
 export class AdminService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findRegions(user: AuthenticatedUser) {
     this.assertAdmin(user);
-    await this.ensureDefaultRegions();
 
     const regions = await this.prisma.region.findMany({
+      where: {
+        code: { startsWith: 'district:' },
+        ward: null,
+      },
       orderBy: [{ city: 'asc' }, { district: 'asc' }, { name: 'asc' }],
     });
 
@@ -127,13 +103,16 @@ export class AdminService {
     admin: AuthenticatedUser,
   ) {
     this.assertAdmin(admin);
-    await this.ensureDefaultRegions();
     const agentId = this.parseId(rawId, 'Agent id');
     const regionIds = this.parseRegionIds(dto.regionIds);
 
     const agent = await this.findPendingSalesAgent(agentId);
     const regions = await this.prisma.region.findMany({
-      where: { id: { in: regionIds } },
+      where: {
+        id: { in: regionIds },
+        code: { startsWith: 'district:' },
+        ward: null,
+      },
     });
 
     if (regions.length !== regionIds.length) {
@@ -378,17 +357,5 @@ export class AdminService {
         'Only Admin users can review Sales Agent accounts.',
       );
     }
-  }
-
-  private async ensureDefaultRegions() {
-    await this.prisma.$transaction(
-      defaultRegions.map((region) =>
-        this.prisma.region.upsert({
-          where: { code: region.code },
-          update: {},
-          create: region,
-        }),
-      ),
-    );
   }
 }
