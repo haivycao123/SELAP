@@ -10,6 +10,7 @@ import {
   SubmitButton
 } from "../../components/auth-components";
 import { apiPost } from "../../lib/api";
+import { Toast } from "../../components/toast";
 
 type LoginResponse = {
   accessToken: string;
@@ -19,6 +20,10 @@ export function LoginForm() {
   const router = useRouter();
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toast, setToast] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -37,14 +42,27 @@ export function LoginForm() {
       });
 
       localStorage.setItem("selapAccessToken", response.accessToken);
-      router.push("/properties");
+      setToast({
+        message: "Signed in successfully! Redirecting...",
+        type: "success",
+      });
+
+      setTimeout(() => {
+        router.push("/properties");
+      }, 2000);
+      
     } catch (caughtError) {
-      setError(
+      const errorMsg =
         caughtError instanceof Error
           ? caughtError.message
-          : "Sign in failed. Please try again."
-      );
-    } finally {
+          : "Sign in failed. Please try again.";
+
+      setError(errorMsg);
+
+      setToast({
+        message: errorMsg,
+        type: "error",
+      });
       setIsSubmitting(false);
     }
   }
@@ -79,6 +97,13 @@ export function LoginForm() {
         label="Create account"
         prompt="Do not have an account?"
       />
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </>
   );
 }
