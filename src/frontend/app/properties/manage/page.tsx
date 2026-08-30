@@ -518,19 +518,20 @@ function PropertyManagementContent() {
 
   return (
     <main className="catalogMockPage managementMockPage">
-      <div className="catalogMockShell">
+      <div className="catalogMockShell notificationShell">
         <RoleNavigation />
 
         {!isFormOpen ? (
-          <section className="managementHeader">
+          <header className="notificationHeader">
             <div>
-              <p className="eyebrow">Property Management</p>
-              <h1>Inventory control</h1>
+              <p className="pageEyebrow">PROPERTY MANAGEMENT</p>
+              <h1>Inventory Control</h1>
+              <p>Manage and update property inventory across assigned regions.</p>
             </div>
-            <button className="primaryButton compactButton" onClick={startCreate}>
+            <button className="primaryButton compactButton" onClick={startCreate} type="button">
               New Property
             </button>
-          </section>
+          </header>
         ) : null}
 
         {!token ? (

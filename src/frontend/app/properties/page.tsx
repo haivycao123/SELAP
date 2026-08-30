@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { RoleNavigation } from "../components/role-navigation";
 import { apiDelete, apiGet, apiPost } from "../lib/api";
+import { Toast } from "../components/toast";
 import {
   formatMoney,
   formatStatus,
@@ -65,20 +66,36 @@ const PAGE_SIZE = 12;
 export default function PropertyCatalogPage() {
   const [filters, setFilters] = useState(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
+<<<<<<< HEAD
   const [properties, setProperties] = useState<Property[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+=======
+  const [currentPage, setCurrentPage] = useState(1); 
+  const [pageSize, setPageSize] = useState(20);      
+  const [response, setResponse] = useState<PropertyListResponse | null>(null);
+>>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [regions, setRegions] = useState<RegionOption[]>([]);
   const [savedPropertyIds, setSavedPropertyIds] = useState<number[]>([]);
   const [savingPropertyId, setSavingPropertyId] = useState<number | null>(null);
+<<<<<<< HEAD
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
+=======
+  const [toast, setToast] = useState<{ message: string; type: "success" | "info" } | null>(null);
+  const [isManualFilter, setIsManualFilter] = useState(false);
+>>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
 
   const queryBase = useMemo(() => {
     const params = new URLSearchParams({
+<<<<<<< HEAD
       limit: String(PAGE_SIZE),
+=======
+      limit: String(pageSize),       
+      page: String(currentPage),    
+>>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
       sortBy: "createdAt",
       sortOrder: "desc"
     });
@@ -101,7 +118,7 @@ export default function PropertyCatalogPage() {
     applyTypeFilter(params, appliedFilters.type);
 
     return params.toString();
-  }, [appliedFilters]);
+  }, [appliedFilters, currentPage, pageSize]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -117,6 +134,7 @@ export default function PropertyCatalogPage() {
     apiGet<PropertyListResponse>(`/properties?${queryBase}&page=${page}`)
       .then((data) => {
         if (isCurrent) {
+<<<<<<< HEAD
           const nextProperties = Array.isArray(data.data) ? data.data : [];
           const nextTotalPages =
             typeof data.meta?.totalPages === "number"
@@ -129,6 +147,18 @@ export default function PropertyCatalogPage() {
               ? nextProperties
               : appendUniqueProperties(current, nextProperties)
           );
+=======
+          setResponse(data);
+
+          if (isManualFilter) {
+            const totalFound = data.data?.length ?? 0;
+            setToast({
+              message: `Filtered successfully! Found ${totalFound} ${totalFound === 1 ? "property" : "properties"}.`,
+              type: "success",
+            });
+            setIsManualFilter(false); // Reset cờ
+          }
+>>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
         }
       })
       .catch((caughtError) => {
@@ -207,9 +237,14 @@ export default function PropertyCatalogPage() {
 
   function applyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+<<<<<<< HEAD
     setProperties([]);
     setPage(1);
     setTotalPages(1);
+=======
+    setIsManualFilter(true);
+    setCurrentPage(1);
+>>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
     setAppliedFilters(filters);
   }
 
@@ -239,7 +274,12 @@ export default function PropertyCatalogPage() {
     }
   }
 
+<<<<<<< HEAD
   const districtOptions = useMemo(() => getDistrictOptions(regions), [regions]);
+=======
+  const properties = response?.data ?? [];
+  const totalPages = response?.meta?.totalPages ?? 1;
+>>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
 
   return (
     <main className="catalogMockPage">
@@ -332,11 +372,120 @@ export default function PropertyCatalogPage() {
               ))
             : null}
         </section>
+<<<<<<< HEAD
         <div
           aria-hidden="true"
           className="mockLoadMoreSentinel"
           ref={loadMoreRef}
         />
+=======
+
+        {!isLoading && totalPages > 1 ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginTop: "40px",
+              paddingTop: "24px",
+              borderTop: "1px solid #d8e4e8",
+              flexWrap: "wrap",
+              gap: "16px"
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#667780" }}>
+              <span>Show per page:</span>
+              <select
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid #c9d9de",
+                  background: "#ffffff",
+                  color: "#17252c",
+                  fontWeight: "600",
+                  outline: "none",
+                  cursor: "pointer"
+                }}
+              >
+                <option value={10}>10 properties</option>
+                <option value={20}>20 properties</option>
+                <option value={50}>50 properties</option>
+                <option value={100}>100 properties</option>
+              </select>
+            </div>
+
+            <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+              <button
+                type="button"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: "6px",
+                  border: "1px solid #c9d9de",
+                  background: "#ffffff",
+                  color: currentPage === 1 ? "#cbd5e1" : "#17252c",
+                  cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                  fontWeight: "700"
+                }}
+              >
+                ‹ Prev
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => (
+                <button
+                  key={pageNum}
+                  type="button"
+                  onClick={() => setCurrentPage(pageNum)}
+                  style={{
+                    minWidth: "38px",
+                    height: "38px",
+                    borderRadius: "6px",
+                    border: "1px solid",
+                    borderColor: currentPage === pageNum ? "#328ba8" : "#c9d9de",
+                    background: currentPage === pageNum ? "#328ba8" : "#ffffff",
+                    color: currentPage === pageNum ? "#ffffff" : "#17252c",
+                    fontWeight: "700",
+                    cursor: "pointer"
+                  }}
+                >
+                  {pageNum}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                style={{
+                  padding: "8px 14px",
+                  borderRadius: "6px",
+                  border: "1px solid #c9d9de",
+                  background: "#ffffff",
+                  color: currentPage === totalPages ? "#cbd5e1" : "#17252c",
+                  cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                  fontWeight: "700"
+                }}
+              >
+                Next ›
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+>>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
       </div>
     </main>
   );
