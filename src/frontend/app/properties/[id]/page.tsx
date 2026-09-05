@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { PropertyImageWithFallback } from "../../components/property-image-with-fallback";
 import { RoleNavigation } from "../../components/role-navigation";
 import { apiDelete, apiGet, apiPost } from "../../lib/api";
 import { formatMoney, formatStatus, Property } from "../types";
@@ -146,7 +147,7 @@ export default function PropertyDetailPage() {
   }
 
   const images = property?.images ?? [];
-  const image = images[activeImage] ?? images[0];
+  const activeImages = getImagesFromActiveIndex(images, activeImage);
   const canManage = role === "ADMIN" || role === "SALES_AGENT";
 
   return (
@@ -160,9 +161,12 @@ export default function PropertyDetailPage() {
           <section className="detailLayout">
             <div className="detailGallery">
               <div className="detailMainImage">
-                {image?.url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img alt={image.alt ?? property.title} src={image.url} />
+                {activeImages.length > 0 ? (
+                  <PropertyImageWithFallback
+                    alt={property.title}
+                    fallbackSeed={property.id}
+                    images={activeImages}
+                  />
                 ) : <div className="detailFallbackImage" />}
                 {images.length > 1 ? (
                   <>
@@ -173,8 +177,12 @@ export default function PropertyDetailPage() {
               </div>
               {images.length > 1 ? <div className="detailThumbnails">{images.map((item, index) => (
                 <button aria-label={`View image ${index + 1}`} className={activeImage === index ? "thumbnail active" : "thumbnail"} key={item.id ?? item.url} onClick={() => setActiveImage(index)} type="button">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img alt="" src={item.url} />
+                  <PropertyImageWithFallback
+                    alt=""
+                    images={[item]}
+                    preferImageAlt={false}
+                    useDefaultFallbacks={false}
+                  />
                 </button>
               ))}</div> : null}
             </div>
@@ -225,4 +233,12 @@ function getRoleFromToken(token: string | null): AuthRole {
   } catch {
     return null;
   }
+}
+
+function getImagesFromActiveIndex<T>(images: T[], activeIndex: number) {
+  if (images.length === 0) {
+    return images;
+  }
+
+  return [...images.slice(activeIndex), ...images.slice(0, activeIndex)];
 }

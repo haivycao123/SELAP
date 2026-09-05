@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { PropertyImageWithFallback } from "../components/property-image-with-fallback";
 import { RoleNavigation } from "../components/role-navigation";
 import { apiDelete, apiGet } from "../lib/api";
 import { formatMoney, formatStatus, Property } from "../properties/types";
@@ -134,13 +135,13 @@ function EmptyWishlist() {
 }
 
 function PropertyImage({ property, gradientIndex }: { property: Property; gradientIndex: number }) {
-  const image = property.images[0];
   return (
     <div className={`savedImage savedGradient-${(gradientIndex % 4) + 1}`}>
-      {image?.url ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img alt={image.alt ?? property.title} onError={(event) => { event.currentTarget.style.display = "none"; }} src={image.url} />
-      ) : null}
+      <PropertyImageWithFallback
+        alt={property.title}
+        fallbackSeed={property.id}
+        images={property.images}
+      />
     </div>
   );
 }

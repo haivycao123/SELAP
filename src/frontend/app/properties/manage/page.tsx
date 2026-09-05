@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { PropertyImageWithFallback } from "../../components/property-image-with-fallback";
 import { RoleNavigation } from "../../components/role-navigation";
 import {
   apiDelete,
@@ -790,10 +791,10 @@ function PropertyManagementContent() {
                     <div className="imageGalleryField">
                       {form.images.map((image, index) => (
                         <div className="imageGalleryItem" key={`${image.url}-${index}`}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <PropertyImageWithFallback
                             alt={image.alt || `Property image ${index + 1}`}
-                            src={image.url}
+                            images={[image]}
+                            useDefaultFallbacks={false}
                           />
                           <input
                             aria-label={`Image ${index + 1} alt text`}

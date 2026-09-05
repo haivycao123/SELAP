@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { PropertyImageWithFallback } from "../components/property-image-with-fallback";
 import { RoleNavigation } from "../components/role-navigation";
 import { apiDelete, apiGet, apiPost } from "../lib/api";
 import { Toast } from "../components/toast";
@@ -61,104 +62,48 @@ const initialFilters: CatalogFilters = {
   type: ""
 };
 
-const PAGE_SIZE = 12;
-
 export default function PropertyCatalogPage() {
   const [filters, setFilters] = useState(initialFilters);
   const [appliedFilters, setAppliedFilters] = useState(initialFilters);
-<<<<<<< HEAD
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-=======
-  const [currentPage, setCurrentPage] = useState(1); 
-  const [pageSize, setPageSize] = useState(20);      
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
   const [response, setResponse] = useState<PropertyListResponse | null>(null);
->>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [regions, setRegions] = useState<RegionOption[]>([]);
+  const [fallbackImages, setFallbackImages] = useState<Property["images"]>([]);
   const [savedPropertyIds, setSavedPropertyIds] = useState<number[]>([]);
   const [savingPropertyId, setSavingPropertyId] = useState<number | null>(null);
-<<<<<<< HEAD
-  const loadMoreRef = useRef<HTMLDivElement | null>(null);
-=======
   const [toast, setToast] = useState<{ message: string; type: "success" | "info" } | null>(null);
   const [isManualFilter, setIsManualFilter] = useState(false);
->>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
 
-  const queryBase = useMemo(() => {
-    const params = new URLSearchParams({
-<<<<<<< HEAD
-      limit: String(PAGE_SIZE),
-=======
-      limit: String(pageSize),       
-      page: String(currentPage),    
->>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
-      sortBy: "createdAt",
-      sortOrder: "desc"
-    });
-
-    Object.entries(appliedFilters).forEach(([key, value]) => {
-      if (value) {
-        if (key === "minPrice" || key === "maxPrice") {
-          params.set(key, String(Number(value.replace(",", ".")) * 1000000));
-        } else if (key === "area") {
-          const area = parseDistrictOptionValue(value);
-          if (area) {
-            params.set("city", area.city);
-            params.set("district", area.district);
-          }
-        } else if (key !== "type") {
-          params.set(key, value);
-        }
-      }
-    });
-    applyTypeFilter(params, appliedFilters.type);
-
-    return params.toString();
-  }, [appliedFilters, currentPage, pageSize]);
+  const queryBase = useMemo(
+    () => buildPropertyQuery(appliedFilters, currentPage, pageSize),
+    [appliedFilters, currentPage, pageSize]
+  );
+  const fallbackQueryBase = useMemo(
+    () => buildPropertyQuery(appliedFilters, 1, 100),
+    [appliedFilters]
+  );
 
   useEffect(() => {
     let isCurrent = true;
-    const isFirstPage = page === 1;
-
-    if (isFirstPage) {
-      setIsLoading(true);
-    } else {
-      setIsLoadingMore(true);
-    }
+    setIsLoading(true);
     setError("");
 
-    apiGet<PropertyListResponse>(`/properties?${queryBase}&page=${page}`)
+    apiGet<PropertyListResponse>(`/properties?${queryBase}`)
       .then((data) => {
         if (isCurrent) {
-<<<<<<< HEAD
-          const nextProperties = Array.isArray(data.data) ? data.data : [];
-          const nextTotalPages =
-            typeof data.meta?.totalPages === "number"
-              ? data.meta.totalPages
-              : page;
-
-          setTotalPages(nextTotalPages);
-          setProperties((current) =>
-            isFirstPage
-              ? nextProperties
-              : appendUniqueProperties(current, nextProperties)
-          );
-=======
           setResponse(data);
 
           if (isManualFilter) {
             const totalFound = data.data?.length ?? 0;
             setToast({
               message: `Filtered successfully! Found ${totalFound} ${totalFound === 1 ? "property" : "properties"}.`,
-              type: "success",
+              type: "success"
             });
-            setIsManualFilter(false); // Reset cờ
+            setIsManualFilter(false);
           }
->>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
         }
       })
       .catch((caughtError) => {
@@ -172,62 +117,51 @@ export default function PropertyCatalogPage() {
       })
       .finally(() => {
         if (isCurrent) {
-          if (isFirstPage) {
-            setIsLoading(false);
-          } else {
-            setIsLoadingMore(false);
-          }
+          setIsLoading(false);
         }
       });
 
     return () => {
       isCurrent = false;
     };
-  }, [page, queryBase]);
-
-  useEffect(() => {
-    const target = loadMoreRef.current;
-    if (!target) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (
-          entry.isIntersecting &&
-          !isLoading &&
-          !isLoadingMore &&
-          page < totalPages
-        ) {
-          setPage((current) => current + 1);
-        }
-      },
-      { rootMargin: "520px 0px" }
-    );
-
-    observer.observe(target);
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [isLoading, isLoadingMore, page, totalPages]);
+  }, [queryBase, isManualFilter]);
 
   useEffect(() => {
     const token = localStorage.getItem("selapAccessToken");
     if (!token) return;
 
     apiGet<FavoritesResponse>("/favorites", { token })
-      .then((response) => setSavedPropertyIds(response.data.map((favorite) => favorite.propertyId)))
+      .then((res) => setSavedPropertyIds(res.data.map((fav) => fav.propertyId)))
       .catch(() => {
-        // The public catalogue remains available when a saved list cannot be loaded.
+        // Public catalog remains functional if favorites fail to load
       });
   }, []);
 
   useEffect(() => {
-    apiGet<RegionOptionsResponse>("/properties/regions/public-options")
-      .then((response) => setRegions(response.data))
+    let isCurrent = true;
+
+    apiGet<PropertyListResponse>(`/properties?${fallbackQueryBase}`)
+      .then((data) => {
+        if (isCurrent) {
+          setFallbackImages(getReusableFallbackImages(data.data));
+        }
+      })
       .catch(() => {
-        // The catalogue can still be searched when region options fail to load.
+        if (isCurrent) {
+          setFallbackImages([]);
+        }
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [fallbackQueryBase]);
+
+  useEffect(() => {
+    apiGet<RegionOptionsResponse>("/properties/regions/public-options")
+      .then((res) => setRegions(res.data))
+      .catch(() => {
+        // Catalog can still be searched when region options fail to load
       });
   }, []);
 
@@ -237,14 +171,8 @@ export default function PropertyCatalogPage() {
 
   function applyFilters(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-<<<<<<< HEAD
-    setProperties([]);
-    setPage(1);
-    setTotalPages(1);
-=======
     setIsManualFilter(true);
     setCurrentPage(1);
->>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
     setAppliedFilters(filters);
   }
 
@@ -274,12 +202,9 @@ export default function PropertyCatalogPage() {
     }
   }
 
-<<<<<<< HEAD
   const districtOptions = useMemo(() => getDistrictOptions(regions), [regions]);
-=======
   const properties = response?.data ?? [];
   const totalPages = response?.meta?.totalPages ?? 1;
->>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
 
   return (
     <main className="catalogMockPage">
@@ -354,6 +279,7 @@ export default function PropertyCatalogPage() {
           {!isLoading
             ? properties.map((property, index) => (
                 <PropertyCard
+                  fallbackImages={fallbackImages}
                   gradientIndex={index}
                   key={property.id}
                   property={property}
@@ -363,22 +289,7 @@ export default function PropertyCatalogPage() {
                 />
               ))
             : null}
-          {isLoadingMore
-            ? Array.from({ length: 3 }).map((_, index) => (
-                <div
-                  className="mockPropertyCard mockSkeleton"
-                  key={`more-${index}`}
-                />
-              ))
-            : null}
         </section>
-<<<<<<< HEAD
-        <div
-          aria-hidden="true"
-          className="mockLoadMoreSentinel"
-          ref={loadMoreRef}
-        />
-=======
 
         {!isLoading && totalPages > 1 ? (
           <div
@@ -485,27 +396,20 @@ export default function PropertyCatalogPage() {
             onClose={() => setToast(null)}
           />
         )}
->>>>>>> 33d4db458b6c392f6018234dc41035094fa9c8e5
       </div>
     </main>
   );
 }
 
-function appendUniqueProperties(current: Property[], next: Property[]) {
-  const currentIds = new Set(current.map((property) => property.id));
-  return [
-    ...current,
-    ...next.filter((property) => !currentIds.has(property.id))
-  ];
-}
-
 function PropertyCard({
+  fallbackImages,
   gradientIndex,
   property,
   isSaved,
   isSaving,
   onToggleSaved
 }: {
+  fallbackImages: Property["images"];
   gradientIndex: number;
   property: Property;
   isSaved: boolean;
@@ -515,7 +419,11 @@ function PropertyCard({
   return (
     <article className="mockPropertyCard">
       <Link aria-label={`View ${property.title}`} className="propertyCardLink" href={`/properties/${property.id}`}>
-        <PropertyPhoto gradientIndex={gradientIndex} property={property} />
+        <PropertyPhoto
+          fallbackImages={fallbackImages}
+          gradientIndex={gradientIndex}
+          property={property}
+        />
       </Link>
       <button
         aria-label={isSaved ? "Remove from saved properties" : "Save property"}
@@ -545,39 +453,91 @@ function PropertyCard({
 }
 
 function PropertyPhoto({
+  fallbackImages,
   gradientIndex,
   property
 }: {
+  fallbackImages: Property["images"];
   gradientIndex: number;
   property: Property;
 }) {
-  const image = property.images[0];
-
-  if (image?.url) {
-    return (
-      <div
-        className={`mockPropertyPhoto mockPhotoGradient mockPhotoGradient-${
-          (gradientIndex % 4) + 1
-        }`}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          alt={image.alt ?? property.title}
-          onError={(event) => {
-            event.currentTarget.style.display = "none";
-          }}
-          src={image.url}
-        />
-      </div>
-    );
-  }
-
   return (
     <div
       className={`mockPropertyPhoto mockPhotoGradient mockPhotoGradient-${
         (gradientIndex % 4) + 1
       }`}
-    />
+    >
+      <PropertyImageWithFallback
+        alt={property.title}
+        fallbackImages={fallbackImages}
+        fallbackSeed={property.id}
+        images={property.images}
+      />
+    </div>
+  );
+}
+
+function buildPropertyQuery(
+  appliedFilters: CatalogFilters,
+  currentPage: number,
+  pageSize: number
+) {
+  const params = new URLSearchParams({
+    limit: String(pageSize),
+    page: String(currentPage),
+    sortBy: "createdAt",
+    sortOrder: "desc"
+  });
+
+  Object.entries(appliedFilters).forEach(([key, value]) => {
+    if (value) {
+      if (key === "minPrice" || key === "maxPrice") {
+        params.set(key, String(Number(value.replace(",", ".")) * 1000000));
+      } else if (key === "area") {
+        const area = parseDistrictOptionValue(value);
+        if (area) {
+          params.set("city", area.city);
+          params.set("district", area.district);
+        }
+      } else if (key !== "type") {
+        params.set(key, value);
+      }
+    }
+  });
+  applyTypeFilter(params, appliedFilters.type);
+
+  return params.toString();
+}
+
+function getReusableFallbackImages(properties: Property[]) {
+  const urls = new Set<string>();
+  const images: Property["images"] = [];
+
+  properties.forEach((property) => {
+    property.images?.forEach((image) => {
+      if (isReusableCatalogImage(image.url) && !urls.has(image.url)) {
+        urls.add(image.url);
+        images.push(image);
+      }
+    });
+  });
+
+  return images.slice(0, 60);
+}
+
+function isReusableCatalogImage(value: string | null | undefined) {
+  const url = value?.trim().toLowerCase();
+
+  if (!url) {
+    return false;
+  }
+
+  return (
+    (url.startsWith("http://") ||
+      url.startsWith("https://") ||
+      url.startsWith("//")) &&
+    !url.includes("localhost") &&
+    !url.includes("127.0.0.1")
   );
 }
 
